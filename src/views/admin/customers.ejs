@@ -1,0 +1,203 @@
+<h2 class="mb-4">Clientes</h2>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'success' ? 'success' : 'danger' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-2">
+    <div class="card shadow rounded border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Total</small>
+        <h4 class="mb-0"><%= summary.total %></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card shadow rounded border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">VIP</small>
+        <h4 class="mb-0"><%= summary.vip %></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card shadow rounded border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Recompra</small>
+        <h4 class="mb-0"><%= summary.recompra %></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card shadow rounded border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Recurrentes</small>
+        <h4 class="mb-0"><%= summary.recurrente %></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card shadow rounded border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Con cupon</small>
+        <h4 class="mb-0"><%= summary.con_cupon %></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card shadow rounded border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Inactivos</small>
+        <h4 class="mb-0"><%= summary.inactivo %></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card shadow rounded border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Sin correo</small>
+        <h4 class="mb-0"><%= summary.sin_correo %></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card shadow rounded border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Seguimiento pendiente</small>
+        <h4 class="mb-0"><%= summary.pendingFollowUp %></h4>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bg-white shadow rounded p-3 mb-4">
+  <form method="GET" action="/admin/customers" class="row g-3 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Buscar</label>
+      <input
+        type="text"
+        name="search"
+        class="form-control"
+        placeholder="Nombre, correo, telefono o documento"
+        value="<%= filters?.search || '' %>"
+      >
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Segmento</label>
+      <select name="segment" class="form-select">
+        <% Object.entries(segmentLabels).forEach(([value, label]) => { %>
+          <option value="<%= value %>" <%= filters?.segment === value ? "selected" : "" %>><%= label %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Ciudad</label>
+      <input
+        type="text"
+        name="city"
+        class="form-control"
+        placeholder="Ciudad"
+        value="<%= filters?.city || '' %>"
+      >
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Ordenar</label>
+      <select name="sort" class="form-select">
+        <option value="recent" <%= filters?.sort === "recent" ? "selected" : "" %>>Ultimo pedido</option>
+        <option value="spent_desc" <%= filters?.sort === "spent_desc" ? "selected" : "" %>>Mayor gasto</option>
+        <option value="orders_desc" <%= filters?.sort === "orders_desc" ? "selected" : "" %>>Mas pedidos</option>
+        <option value="name_asc" <%= filters?.sort === "name_asc" ? "selected" : "" %>>Nombre A-Z</option>
+        <option value="inactive_desc" <%= filters?.sort === "inactive_desc" ? "selected" : "" %>>Mas inactivos</option>
+      </select>
+    </div>
+
+    <div class="col-md-3 d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Filtrar</button>
+      <a href="/admin/customers" class="btn btn-outline-secondary">Limpiar</a>
+      <a
+        href="/admin/customers/export.csv?<%= new URLSearchParams({
+          search: filters?.search || '',
+          segment: filters?.segment || 'all',
+          city: filters?.city || '',
+          sort: filters?.sort || 'recent'
+        }).toString() %>"
+        class="btn btn-outline-success"
+      >
+        Exportar CSV
+      </a>
+    </div>
+  </form>
+</div>
+
+<div class="bg-white shadow rounded p-3">
+  <table class="table table-striped mb-0">
+    <thead>
+      <tr>
+        <th>Cliente</th>
+        <th>Contacto</th>
+        <th>Pedidos</th>
+        <th>Total gastado</th>
+        <th>Ultimo pedido</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (customers.length === 0) { %>
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">
+            No se encontraron clientes con los filtros actuales.
+          </td>
+        </tr>
+      <% } %>
+
+      <% customers.forEach(customer => { %>
+        <tr>
+          <td>
+            <strong><%= customer.name %></strong>
+            <div><small class="text-muted">Doc: <%= customer.document %></small></div>
+            <div class="mt-1">
+              <span class="badge text-bg-light border"><%= segmentLabels[customer.segment] || "General" %></span>
+              <% if (customer.followUpStatus && customer.followUpStatus !== "none") { %>
+                <span class="badge text-bg-warning border"><%= followUpLabels[customer.followUpStatus] %></span>
+              <% } %>
+            </div>
+          </td>
+          <td>
+            <div><%= customer.email || "Sin correo" %></div>
+            <small class="text-muted"><%= customer.phone %></small>
+          </td>
+          <td><%= customer.totalOrders %></td>
+          <td>$<%= Number(customer.totalSpent || 0).toLocaleString("es-CO") %></td>
+          <td>
+            <%= customer.lastOrderAt ? new Date(customer.lastOrderAt).toLocaleString("es-CO") : "Sin pedidos" %>
+            <div><small class="text-muted">Cupones: <%= customer.ordersWithCoupon || 0 %></small></div>
+            <% if (customer.daysSinceLastSuccessfulOrder !== null) { %>
+              <div><small class="text-muted"><%= customer.daysSinceLastSuccessfulOrder %> dias desde compra exitosa</small></div>
+            <% } %>
+          </td>
+          <td>
+            <div class="d-flex gap-2">
+              <a href="/admin/customers/<%= customer.id %>" class="btn btn-sm btn-outline-primary">Ver historial</a>
+              <% if (customer.phone) { %>
+                <a
+                  href="https://wa.me/<%= String(customer.phone).replace(/[^0-9]/g, '') %>"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-sm btn-outline-success"
+                >
+                  WhatsApp
+                </a>
+              <% } %>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

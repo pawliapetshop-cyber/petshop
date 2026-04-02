@@ -1,0 +1,203 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="mb-1"><%= customer.name %></h2>
+    <small class="text-muted">Documento: <%= customer.document %></small>
+  </div>
+  <div class="d-flex gap-2">
+    <% if (customer.phone) { %>
+      <a
+        href="https://wa.me/<%= String(customer.phone).replace(/[^0-9]/g, '') %>"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-outline-success"
+      >
+        WhatsApp
+      </a>
+    <% } %>
+    <% if (customer.email) { %>
+      <a href="mailto:<%= customer.email %>" class="btn btn-outline-primary">Correo</a>
+    <% } %>
+    <a href="/admin/customers" class="btn btn-outline-secondary">Volver</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Pedidos</small>
+        <h4 class="mb-0"><%= metrics.totalOrders %></h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Pedidos exitosos</small>
+        <h4 class="mb-0"><%= metrics.successfulOrders %></h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Total gastado</small>
+        <h4 class="mb-0">$<%= Number(metrics.totalSpent || 0).toLocaleString("es-CO") %></h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Promedio por pedido</small>
+        <h4 class="mb-0">$<%= Number(metrics.averageOrderValue || 0).toLocaleString("es-CO") %></h4>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Segmento</small>
+        <h5 class="mb-0 text-capitalize"><%= metrics.segment.replace("_", " ") %></h5>
+        <% if (metrics.daysSinceLastSuccessfulOrder !== null) { %>
+          <small class="text-muted d-block mt-2"><%= metrics.daysSinceLastSuccessfulOrder %> dias desde la ultima compra exitosa</small>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Pedidos entregados</small>
+        <h4 class="mb-0"><%= metrics.deliveredOrders %></h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Pedidos pendientes</small>
+        <h4 class="mb-0"><%= metrics.pendingOrders %></h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Pedidos con cupon</small>
+        <h4 class="mb-0"><%= metrics.couponOrders %></h4>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if (metrics.segment === "recompra") { %>
+  <div class="alert alert-warning border">
+    Este cliente aparece como candidato para recompra segun su historial reciente.
+  </div>
+<% } %>
+
+<div class="bg-white shadow rounded p-4 mb-4">
+  <h4 class="mb-3">Datos del cliente</h4>
+  <div class="row">
+    <div class="col-md-6">
+      <p><strong>Correo:</strong> <%= customer.email || "Sin correo" %></p>
+      <p><strong>Telefono:</strong> <%= customer.phone %></p>
+      <p><strong>Ciudad:</strong> <%= customer.city || "No registrada" %></p>
+    </div>
+    <div class="col-md-6">
+      <p><strong>Direccion:</strong> <%= customer.address || "No registrada" %></p>
+      <p><strong>Ultimo pedido:</strong> <%= metrics.lastOrderAt ? new Date(metrics.lastOrderAt).toLocaleString("es-CO") : "Sin pedidos" %></p>
+      <p><strong>Ultimo pedido exitoso:</strong> <%= metrics.lastSuccessfulOrderAt ? new Date(metrics.lastSuccessfulOrderAt).toLocaleString("es-CO") : "Sin pedidos exitosos" %></p>
+      <p><strong>Cliente desde:</strong> <%= new Date(customer.createdAt).toLocaleDateString("es-CO") %></p>
+    </div>
+  </div>
+</div>
+
+<div class="bg-white shadow rounded p-4 mb-4">
+  <h4 class="mb-3">Seguimiento comercial</h4>
+
+  <form method="POST" action="/admin/customers/<%= customer.id %>/follow-up">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Estado</label>
+        <select name="followUpStatus" class="form-select">
+          <% Object.entries(followUpLabels).forEach(([value, label]) => { %>
+            <option value="<%= value %>" <%= customer.followUpStatus === value ? "selected" : "" %>><%= label %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="col-md-8">
+        <label class="form-label">Nota</label>
+        <input
+          type="text"
+          name="followUpNotes"
+          class="form-control"
+          value="<%= customer.followUpNotes || '' %>"
+          placeholder="Ej. Se contacto por WhatsApp para recompra"
+        >
+      </div>
+    </div>
+
+    <div class="mt-3 d-flex justify-content-between align-items-center">
+      <small class="text-muted">
+        Ultimo contacto:
+        <%= customer.lastContactAt ? new Date(customer.lastContactAt).toLocaleString("es-CO") : "Sin registrar" %>
+      </small>
+      <button class="btn btn-success" type="submit">Guardar seguimiento</button>
+    </div>
+  </form>
+</div>
+
+<div class="bg-white shadow rounded p-4">
+  <h4 class="mb-3">Historial de pedidos</h4>
+
+  <% if (orders.length === 0) { %>
+    <p class="text-muted mb-0">Este cliente todavia no tiene pedidos registrados.</p>
+  <% } %>
+
+  <% if (orders.length > 0) { %>
+    <div class="table-responsive">
+      <table class="table table-striped mb-0">
+        <thead>
+          <tr>
+            <th>Pedido</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Pago</th>
+            <th>Cupon</th>
+            <th>Total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% orders.forEach(order => { %>
+            <tr>
+              <td>#<%= order.id %></td>
+              <td><%= new Date(order.createdAt).toLocaleString("es-CO") %></td>
+              <td><%= order.status %></td>
+              <td><%= order.paymentMethod %></td>
+              <td><%= order.couponCode || "Sin cupon" %></td>
+              <td>$<%= Number(order.total || 0).toLocaleString("es-CO") %></td>
+              <td>
+                <a href="/admin/orders/<%= order.id %>" class="btn btn-sm btn-outline-primary">Ver pedido</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>

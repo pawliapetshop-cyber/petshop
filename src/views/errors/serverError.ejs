@@ -1,0 +1,10 @@
+<div class="container py-5">
+  <div class="bg-white shadow rounded p-5 text-center">
+    <h2 class="mb-3"><%= title || "Ocurrio un error" %></h2>
+    <p class="text-muted mb-4">
+      <%= message || "Intenta de nuevo en un momento." %>
+    </p>
+    <a href="javascript:history.back()" class="btn btn-outline-secondary me-2">Volver</a>
+    <a href="/tienda" class="btn btn-success">Ir a la tienda</a>
+  </div>
+</div>

@@ -1,0 +1,123 @@
+<h2 class="mb-4">Dashboard</h2>
+
+<div class="d-flex justify-content-end mb-3">
+  <a href="/admin/reports" class="btn btn-outline-primary">Ver reportes</a>
+</div>
+
+<div class="row">
+  <div class="col-md-3">
+    <div class="card shadow p-3 text-center">
+      <h5>Productos</h5>
+      <h2><%= totalProducts %></h2>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow p-3 text-center">
+      <h5>Categorias</h5>
+      <h2><%= totalCategories %></h2>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow p-3 text-center bg-danger text-white">
+      <h5>Bajo stock</h5>
+      <h2><%= lowStock %></h2>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow p-3 text-center">
+      <h5>Catalogo</h5>
+      <div><small>Activos: <%= activeProducts %></small></div>
+      <div><small>Inactivos: <%= inactiveProducts %></small></div>
+      <div><small>Alertas por variante: <%= lowVariantStock %></small></div>
+      <div><small>Banners activos: <%= totalActiveBanners %></small></div>
+      <div><small>Cupones activos: <%= totalActiveCoupons %></small></div>
+      <a href="/admin/products/create" class="btn btn-success btn-sm mt-2">+ Producto</a>
+    </div>
+  </div>
+</div>
+
+<div class="mt-4 bg-white shadow rounded p-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Variantes con alerta</h4>
+    <a href="/admin/products?stockFilter=variant-low" class="btn btn-outline-danger btn-sm">
+      Ver inventario
+    </a>
+  </div>
+
+  <% if (variantAlerts && variantAlerts.length > 0) { %>
+    <div class="table-responsive">
+      <table class="table table-striped mb-0">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Variante</th>
+            <th>Disponible</th>
+            <th>Umbral</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% variantAlerts.forEach(alert => { %>
+            <tr>
+              <td>
+                <a href="/admin/products/edit/<%= alert.productId %>"><%= alert.productName %></a>
+              </td>
+              <td><%= alert.variantName %></td>
+              <td>
+                <span class="<%= alert.available <= 0 ? 'text-danger fw-bold' : 'text-warning fw-semibold' %>">
+                  <%= alert.available %>
+                </span>
+              </td>
+              <td><%= alert.threshold %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <p class="text-muted mb-0">No hay variantes en alerta en este momento.</p>
+  <% } %>
+</div>
+
+<div class="mt-5">
+  <h4>Ultimos productos</h4>
+
+  <table class="table table-striped bg-white shadow">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Stock disponible</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% latestProducts.forEach(p => { %>
+        <%
+          const available = p.inventoryMeta?.available ?? ((Number(p.stock) || 0) - (Number(p.reservedStock) || 0));
+          const lowVariants = p.inventoryMeta?.lowVariants || [];
+        %>
+        <tr>
+          <td>
+            <%= p.name %>
+            <% if (lowVariants.length > 0) { %>
+              <div><small class="text-warning"><%= lowVariants.length %> variantes en alerta</small></div>
+            <% } %>
+          </td>
+          <td>$<%= p.price %></td>
+          <td><%= available %></td>
+          <td>
+            <% if (p.isActive) { %>
+              <span class="badge bg-success">Activo</span>
+            <% } else { %>
+              <span class="badge bg-secondary">Inactivo</span>
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

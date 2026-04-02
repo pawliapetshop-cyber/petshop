@@ -1,0 +1,85 @@
+<div class="container mt-4">
+  <div class="bg-white shadow rounded p-4 mb-4">
+    <small class="text-uppercase text-muted">Atencion al cliente</small>
+    <h2 class="mb-2">Contactanos</h2>
+    <p class="text-muted mb-0">
+      Si tienes dudas sobre pedidos, entregas, pagos o productos, puedes comunicarte con nuestro equipo por los siguientes medios.
+    </p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="bg-white shadow rounded p-4 h-100">
+        <h4 class="mb-3">Canales disponibles</h4>
+
+        <div class="mb-3">
+          <strong>Correo</strong>
+          <div class="text-muted">
+            <% if (store?.contactEmail) { %>
+              <a href="mailto:<%= store.contactEmail %>"><%= store.contactEmail %></a>
+            <% } else { %>
+              No registrado
+            <% } %>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <strong>Telefono</strong>
+          <div class="text-muted">
+            <% if (store?.contactPhone) { %>
+              <a href="tel:<%= store.contactPhone %>"><%= store.contactPhone %></a>
+            <% } else { %>
+              No registrado
+            <% } %>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <strong>WhatsApp</strong>
+          <div class="text-muted">
+            <% if (store?.whatsapp) { %>
+              <a href="https://wa.me/<%= String(store.whatsapp).replace(/[^0-9]/g, '') %>" target="_blank" rel="noopener noreferrer">
+                <%= store.whatsapp %>
+              </a>
+            <% } else { %>
+              No registrado
+            <% } %>
+          </div>
+        </div>
+
+        <div class="alert alert-light border mt-4 mb-0">
+          Te recomendamos incluir el numero de pedido si ya realizaste una compra, para ayudarte mucho mas rapido.
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="bg-white shadow rounded p-4 h-100">
+        <h4 class="mb-3">Te ayudamos con</h4>
+        <ul class="mb-4 text-muted">
+          <li>Estado de tu pedido</li>
+          <li>Disponibilidad de productos</li>
+          <li>Soporte con pagos y comprobantes</li>
+          <li>Dudas sobre envios y cobertura</li>
+        </ul>
+
+        <div class="d-grid gap-2">
+          <% if (store?.whatsapp) { %>
+            <a
+              href="https://wa.me/<%= String(store.whatsapp).replace(/[^0-9]/g, '') %>"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-success"
+            >
+              Escribir por WhatsApp
+            </a>
+          <% } %>
+          <% if (store?.contactEmail) { %>
+            <a href="mailto:<%= store.contactEmail %>" class="btn btn-outline-secondary">Enviar correo</a>
+          <% } %>
+          <a href="<%= storeBasePath %>" class="btn btn-outline-primary">Volver a la tienda</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

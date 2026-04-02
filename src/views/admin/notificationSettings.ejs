@@ -1,0 +1,90 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="mb-1">Notificaciones</h2>
+    <small class="text-muted">
+      Configura los correos que recibiran alertas para <strong><%= selectedStore.name %></strong>.
+    </small>
+  </div>
+</div>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'success' ? 'success' : 'danger' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<% if (errorMessages && errorMessages.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      <% errorMessages.forEach(message => { %>
+        <li><%= message %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<div class="alert alert-<%= smtpConfigured ? 'success' : 'warning' %>">
+  <% if (smtpConfigured) { %>
+    El servidor SMTP esta configurado. Las notificaciones por correo estan listas para enviarse.
+  <% } else { %>
+    Falta configurar SMTP en variables de entorno. Puedes guardar destinatarios, pero no se enviaran correos hasta completar esa configuracion.
+  <% } %>
+</div>
+
+<% if (adminSession?.role === "superadmin") { %>
+  <div class="bg-white shadow rounded p-3 mb-4">
+    <form method="GET" action="/admin/notifications" class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">Tienda</label>
+        <select name="storeId" class="form-select" onchange="this.form.submit()">
+          <% stores.forEach(store => { %>
+            <option value="<%= store.id %>" <%= Number(selectedStore.id) === Number(store.id) ? "selected" : "" %>>
+              <%= store.name %> (<%= store.slug %>)
+            </option>
+          <% }) %>
+        </select>
+      </div>
+    </form>
+  </div>
+<% } %>
+
+<form method="POST" action="/admin/notifications" class="bg-white shadow rounded p-4">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="storeId" value="<%= selectedStore.id %>">
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="border rounded p-3 h-100">
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="notifyOnNewOrder" name="notifyOnNewOrder" <%= formData?.notifyOnNewOrder ? "checked" : "" %>>
+          <label class="form-check-label" for="notifyOnNewOrder">Notificar pedidos nuevos</label>
+        </div>
+        <label class="form-label">Correos para pedidos</label>
+        <textarea name="orderEmails" rows="8" class="form-control" placeholder="uno@correo.com&#10;dos@correo.com"><%= formData?.orderEmails || "" %></textarea>
+        <div class="form-text">Puedes separar correos por linea, coma o punto y coma.</div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="border rounded p-3 h-100">
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="notifyOnLowStock" name="notifyOnLowStock" <%= formData?.notifyOnLowStock ? "checked" : "" %>>
+          <label class="form-check-label" for="notifyOnLowStock">Notificar bajo stock</label>
+        </div>
+        <label class="form-label">Correos para bajo stock</label>
+        <textarea name="lowStockEmails" rows="8" class="form-control" placeholder="inventario@correo.com&#10;compras@correo.com"><%= formData?.lowStockEmails || "" %></textarea>
+        <div class="form-text">Las alertas saldran cuando un producto o variante cruce su umbral de stock bajo.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4 d-flex justify-content-end">
+    <button class="btn btn-success" type="submit">Guardar notificaciones</button>
+  </div>
+</form>
+
+<form method="POST" action="/admin/notifications/test" class="mt-3">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="storeId" value="<%= selectedStore.id %>">
+  <button class="btn btn-outline-primary" type="submit">Enviar correo de prueba</button>
+</form>

@@ -1,0 +1,194 @@
+<h2 class="mb-4">Cupones de descuento</h2>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'success' ? 'success' : 'danger' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<% if (errorMessages && errorMessages.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      <% errorMessages.forEach(message => { %>
+        <li><%= message %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<div class="bg-white shadow rounded p-4 mb-4">
+  <h4 class="mb-3">Crear cupon</h4>
+
+  <form method="POST" action="/admin/coupons/create" class="row g-3">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="col-md-3">
+      <label class="form-label">Codigo</label>
+      <input type="text" name="code" class="form-control text-uppercase" value="<%= formData?.code || '' %>" placeholder="BIENVENIDA10" required>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Nombre interno</label>
+      <input type="text" name="title" class="form-control" value="<%= formData?.title || '' %>" placeholder="Descuento bienvenida" required>
+    </div>
+
+    <div class="col-md-5">
+      <label class="form-label">Descripcion</label>
+      <input type="text" name="description" class="form-control" value="<%= formData?.description || '' %>" placeholder="Opcional">
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Tipo</label>
+      <select name="discountType" class="form-select">
+        <option value="percent" <%= formData?.discountType === 'percent' ? 'selected' : '' %>>Porcentaje</option>
+        <option value="fixed" <%= formData?.discountType === 'fixed' ? 'selected' : '' %>>Valor fijo</option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Valor</label>
+      <input type="number" name="discountValue" min="0.01" step="0.01" class="form-control" value="<%= formData?.discountValue || '' %>" required>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Limite de usos</label>
+      <input type="number" name="usageLimit" min="1" step="1" class="form-control" value="<%= formData?.usageLimit ?? 1 %>" required>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Monto minimo carrito</label>
+      <input type="number" name="minimumCartAmount" min="0" step="0.01" class="form-control" value="<%= formData?.minimumCartAmount ?? 0 %>">
+      <div class="form-text">Solo aplica a cupones para todo el carrito.</div>
+    </div>
+
+    <div class="col-md-3 d-flex align-items-end">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="couponActive" name="isActive" <%= formData?.isActive !== false ? 'checked' : '' %>>
+        <label class="form-check-label" for="couponActive">Activo</label>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <label class="form-label">Producto especifico</label>
+      <select name="productId" class="form-select">
+        <option value="">Aplicar a todo el carrito</option>
+        <% products.forEach(product => { %>
+          <option value="<%= product.id %>" <%= String(formData?.productId || '') === String(product.id) ? 'selected' : '' %>>
+            <%= product.name %>
+          </option>
+        <% }) %>
+      </select>
+      <div class="form-text">Si eliges un producto, el descuento solo aplica sobre ese articulo cuando este en el carrito.</div>
+    </div>
+
+    <div class="col-12">
+      <button class="btn btn-success" type="submit">Crear cupon</button>
+    </div>
+  </form>
+</div>
+
+<div class="bg-white shadow rounded p-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Cupones creados</h4>
+    <small class="text-muted"><%= coupons.length %> registros</small>
+  </div>
+
+  <% if (coupons.length === 0) { %>
+    <p class="text-muted mb-0">Todavia no hay cupones configurados para esta tienda.</p>
+  <% } %>
+
+  <% coupons.forEach(coupon => { %>
+    <form method="POST" action="/admin/coupons/<%= coupon.id %>/update" class="border rounded p-3 mb-3">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div class="row g-3 align-items-end">
+        <div class="col-md-2">
+          <label class="form-label">Codigo</label>
+          <input type="text" name="code" class="form-control text-uppercase" value="<%= coupon.code %>" required>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Nombre</label>
+          <input type="text" name="title" class="form-control" value="<%= coupon.title %>" required>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Descripcion</label>
+          <input type="text" name="description" class="form-control" value="<%= coupon.description || '' %>">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Tipo</label>
+          <select name="discountType" class="form-select">
+            <option value="percent" <%= coupon.discountType === 'percent' ? 'selected' : '' %>>Porcentaje</option>
+            <option value="fixed" <%= coupon.discountType === 'fixed' ? 'selected' : '' %>>Valor fijo</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Valor</label>
+          <input type="number" name="discountValue" min="0.01" step="0.01" class="form-control" value="<%= coupon.discountValue %>" required>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Limite</label>
+          <input type="number" name="usageLimit" min="<%= coupon.usageCount || 1 %>" step="1" class="form-control" value="<%= coupon.usageLimit %>" required>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Usados</label>
+          <input type="text" class="form-control" value="<%= coupon.usageCount %>" disabled>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Monto minimo carrito</label>
+          <input type="number" name="minimumCartAmount" min="0" step="0.01" class="form-control" value="<%= Number(coupon.minimumCartAmount || 0) %>">
+        </div>
+
+        <div class="col-md-5">
+          <label class="form-label">Producto</label>
+          <select name="productId" class="form-select">
+            <option value="">Aplicar a todo el carrito</option>
+            <% products.forEach(product => { %>
+              <option value="<%= product.id %>" <%= String(coupon.ProductId || '') === String(product.id) ? 'selected' : '' %>>
+                <%= product.name %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="col-md-3 d-flex align-items-end">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="coupon-<%= coupon.id %>" name="isActive" <%= coupon.isActive ? 'checked' : '' %>>
+            <label class="form-check-label" for="coupon-<%= coupon.id %>">Activo</label>
+          </div>
+        </div>
+
+        <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
+          <button class="btn btn-primary btn-sm" type="submit">Guardar cambios</button>
+          <button class="btn btn-outline-secondary btn-sm" type="submit" formaction="/admin/coupons/<%= coupon.id %>/toggle-status" formmethod="POST">
+            <%= coupon.isActive ? 'Desactivar' : 'Activar' %>
+          </button>
+          <button class="btn btn-danger btn-sm" type="submit" formaction="/admin/coupons/<%= coupon.id %>/delete" formmethod="POST" onclick="return confirm('Eliminar este cupon?')">
+            Eliminar
+          </button>
+
+          <span class="badge <%= coupon.isActive ? 'bg-success' : 'bg-secondary' %>">
+            <%= coupon.isActive ? 'Disponible' : 'Oculto' %>
+          </span>
+          <small class="text-muted">
+            <%= coupon.discountType === 'percent' ? `${coupon.discountValue}%` : `$${Number(coupon.discountValue).toLocaleString('es-CO')}` %>
+            <% if (coupon.Product) { %>
+              | Solo <%= coupon.Product.name %>
+            <% } else { %>
+              | Todo el carrito
+              <% if (Number(coupon.minimumCartAmount || 0) > 0) { %>
+                | Minimo $<%= Number(coupon.minimumCartAmount).toLocaleString('es-CO') %>
+              <% } %>
+            <% } %>
+          </small>
+        </div>
+      </div>
+    </form>
+  <% }) %>
+</div>

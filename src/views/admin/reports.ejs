@@ -1,0 +1,190 @@
+<h2 class="mb-4">Reportes y metricas</h2>
+
+<div class="bg-white shadow rounded p-3 mb-4">
+  <form method="GET" action="/admin/reports" class="row g-3 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Desde</label>
+      <input type="date" name="dateFrom" class="form-control" value="<%= filters?.dateFrom || '' %>">
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Hasta</label>
+      <input type="date" name="dateTo" class="form-control" value="<%= filters?.dateTo || '' %>">
+    </div>
+
+    <div class="col-md-4 d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Actualizar reporte</button>
+      <a href="/admin/reports" class="btn btn-outline-secondary">Ultimos 30 dias</a>
+      <a
+        href="/admin/reports/export.csv?<%= new URLSearchParams({
+          dateFrom: filters?.dateFrom || '',
+          dateTo: filters?.dateTo || ''
+        }).toString() %>"
+        class="btn btn-outline-success"
+      >
+        Exportar CSV
+      </a>
+    </div>
+  </form>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Ventas brutas</small>
+        <h4 class="mb-1">$<%= Number(metrics.grossSales || 0).toLocaleString("es-CO") %></h4>
+        <small class="text-muted">Ticket promedio: $<%= Number(metrics.averageTicket || 0).toLocaleString("es-CO") %></small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Pedidos</small>
+        <h4 class="mb-1"><%= metrics.successfulOrders %> exitosos</h4>
+        <small class="text-muted">Total periodo: <%= metrics.totalOrders %></small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Cupones</small>
+        <h4 class="mb-1"><%= metrics.couponOrders %> pedidos</h4>
+        <small class="text-muted">Descuentos: $<%= Number(metrics.totalDiscounts || 0).toLocaleString("es-CO") %></small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <small class="text-muted">Resenas</small>
+        <h4 class="mb-1"><%= metrics.averageRatingLabel %> / 5</h4>
+        <small class="text-muted">Pendientes: <%= metrics.reviewsPending %> | Aprobadas: <%= metrics.reviewsApproved %></small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="bg-white shadow rounded p-4 mb-4">
+      <h4 class="mb-3">Ventas por dia</h4>
+
+      <% if (dailySales.length === 0) { %>
+        <p class="text-muted mb-0">No hay ventas registradas en el rango seleccionado.</p>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table table-striped mb-0">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Pedidos</th>
+                <th>Total vendido</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% dailySales.forEach(item => { %>
+                <tr>
+                  <td><%= item.date %></td>
+                  <td><%= item.orders %></td>
+                  <td>$<%= Number(item.total || 0).toLocaleString("es-CO") %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="bg-white shadow rounded p-4">
+      <h4 class="mb-3">Productos mas vendidos</h4>
+
+      <% if (topProducts.length === 0) { %>
+        <p class="text-muted mb-0">Aun no hay productos vendidos en este periodo.</p>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table table-striped mb-0">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Unidades</th>
+                <th>Ingreso</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% topProducts.forEach(item => { %>
+                <tr>
+                  <td>
+                    <% if (item.productId) { %>
+                      <a href="/admin/products/edit/<%= item.productId %>"><%= item.productName %></a>
+                    <% } else { %>
+                      <%= item.productName %>
+                    <% } %>
+                  </td>
+                  <td><%= item.quantity %></td>
+                  <td>$<%= Number(item.revenue || 0).toLocaleString("es-CO") %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="bg-white shadow rounded p-4 mb-4">
+      <h4 class="mb-3">Salud operativa</h4>
+      <div class="d-flex justify-content-between mb-2">
+        <span>Pendientes</span>
+        <strong class="text-warning"><%= metrics.pendingOrders %></strong>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span>Rechazados</span>
+        <strong class="text-danger"><%= metrics.rejectedOrders %></strong>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span>Envio cobrado</span>
+        <strong>$<%= Number(metrics.totalShipping || 0).toLocaleString("es-CO") %></strong>
+      </div>
+      <div class="d-flex justify-content-between">
+        <span>Promedio por pedido</span>
+        <strong>$<%= Number(metrics.averageTicket || 0).toLocaleString("es-CO") %></strong>
+      </div>
+    </div>
+
+    <div class="bg-white shadow rounded p-4">
+      <h4 class="mb-3">Cupones con mejor rendimiento</h4>
+
+      <% if (topCoupons.length === 0) { %>
+        <p class="text-muted mb-0">Todavia no se han usado cupones en este periodo.</p>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table table-striped mb-0">
+            <thead>
+              <tr>
+                <th>Codigo</th>
+                <th>Usos</th>
+                <th>Ahorro total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% topCoupons.forEach(coupon => { %>
+                <tr>
+                  <td><strong><%= coupon.code %></strong></td>
+                  <td><%= coupon.uses %></td>
+                  <td>$<%= Number(coupon.savings || 0).toLocaleString("es-CO") %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>

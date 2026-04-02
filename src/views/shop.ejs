@@ -1,0 +1,481 @@
+<div class="mt-4">
+  <% if (errorMessage) { %>
+    <div class="alert alert-danger"><%= errorMessage %></div>
+  <% } %>
+
+  <% if (successMessage) { %>
+    <div class="alert alert-success"><%= successMessage %></div>
+  <% } %>
+
+  <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div>
+        <small class="text-uppercase text-muted"><%= themeContent?.heroEyebrow || "Catalogo comercial" %></small>
+        <h2 class="mb-1"><%= themeContent?.heroTitle || "Encuentra lo ideal para cada mascota" %></h2>
+        <p class="text-muted mb-0"><%= themeContent?.heroSubtitle || `${summary?.totalProducts || 0} productos disponibles, ${summary?.variantProducts || 0} con opciones de variante.` %></p>
+      </div>
+
+      <% let totalItems = 0; %>
+      <% (cart || []).forEach(item => { totalItems += item.quantity; }) %>
+
+      <% if(totalItems > 0){ %>
+        <a href="<%= `${storeBasePath}/cart` %>" class="btn btn-warning position-relative">
+          Ver carrito
+          <span style="position:absolute; top:-8px; right:-8px; background:red; color:white; border-radius:50%; font-size:12px; padding:2px 6px;">
+            <%= totalItems %>
+          </span>
+        </a>
+      <% } %>
+    </div>
+  </div>
+
+  <% if (banners && banners.length > 0) { %>
+    <div class="mb-4">
+      <% const featuredBanner = banners[0]; %>
+      <a href="<%= `${storeBasePath}/producto/${featuredBanner.ProductId}` %>" class="text-decoration-none">
+        <div class="position-relative overflow-hidden rounded-4 shadow-sm mb-3">
+          <img
+            src="/uploads/<%= featuredBanner.image %>"
+            alt="<%= featuredBanner.title %>"
+            class="w-100"
+            style="max-height:420px; object-fit:cover;"
+          >
+          <div
+            class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-end"
+            style="background: linear-gradient(180deg, rgba(0,0,0,0.05) 20%, rgba(0,0,0,0.72) 100%);"
+          >
+            <div class="p-4 p-md-5 text-white" style="max-width: 560px;">
+              <small class="text-uppercase">Anuncio destacado</small>
+              <h2 class="mt-2 mb-2"><%= featuredBanner.title %></h2>
+              <% if (featuredBanner.subtitle) { %>
+                <p class="mb-3"><%= featuredBanner.subtitle %></p>
+              <% } %>
+              <span class="btn btn-light btn-sm">
+                <%= featuredBanner.buttonLabel || "Ver producto" %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <% if (banners.length > 1) { %>
+        <div class="row g-3">
+          <% banners.slice(1, 3).forEach(banner => { %>
+            <div class="col-md-6">
+              <a href="<%= `${storeBasePath}/producto/${banner.ProductId}` %>" class="text-decoration-none">
+                <div class="position-relative overflow-hidden rounded-4 shadow-sm">
+                  <img
+                    src="/uploads/<%= banner.image %>"
+                    alt="<%= banner.title %>"
+                    class="w-100"
+                    style="height:220px; object-fit:cover;"
+                  >
+                  <div
+                    class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-end"
+                    style="background: linear-gradient(180deg, rgba(0,0,0,0.04) 30%, rgba(0,0,0,0.70) 100%);"
+                  >
+                    <div class="p-3 text-white">
+                      <div class="fw-semibold"><%= banner.title %></div>
+                      <% if (banner.subtitle) { %>
+                        <small><%= banner.subtitle %></small>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  <% } %>
+
+  <% if (promoSections && promoSections.length > 0) { %>
+    <div class="row g-4 mb-4">
+      <% promoSections.forEach((promo, index) => { %>
+        <div class="<%= promoSections.length === 1 ? 'col-12' : 'col-lg-6' %>">
+          <div class="bg-white rounded-4 shadow-sm overflow-hidden h-100">
+            <div class="row g-0 h-100">
+              <div class="<%= promo.image ? 'col-md-5' : 'col-12' %>">
+                <% if (promo.image) { %>
+                  <img
+                    src="/uploads/<%= promo.image %>"
+                    alt="<%= promo.title || `Promocion ${index + 1}` %>"
+                    class="w-100 h-100"
+                    style="min-height: 240px; object-fit: cover;"
+                  >
+                <% } else { %>
+                  <div
+                    class="h-100 d-flex align-items-center justify-content-center text-muted"
+                    style="min-height:240px; background: linear-gradient(135deg, rgba(25,135,84,0.12), rgba(13,110,253,0.08));"
+                  >
+                    Seccion promocional
+                  </div>
+                <% } %>
+              </div>
+
+              <div class="<%= promo.image ? 'col-md-7' : 'col-12' %>">
+                <div class="p-4 d-flex flex-column h-100 justify-content-center">
+                  <% if (promo.eyebrow) { %>
+                    <small class="text-uppercase text-muted"><%= promo.eyebrow %></small>
+                  <% } %>
+                  <h4 class="mt-2 mb-2"><%= promo.title || "Promocion especial" %></h4>
+                  <% if (promo.description) { %>
+                    <p class="text-muted mb-3"><%= promo.description %></p>
+                  <% } %>
+                  <% if (promo.buttonUrl) { %>
+                    <div>
+                      <a
+                        href="<%= promo.buttonUrl %>"
+                        class="btn btn-outline-success"
+                        <%= /^https?:\/\//i.test(promo.buttonUrl) ? 'target="_blank" rel="noopener noreferrer"' : '' %>
+                      >
+                        <%= promo.buttonLabel || "Descubrir" %>
+                      </a>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <% if (themeContent?.showRecommended !== false && recommendedProducts && recommendedProducts.length > 0) { %>
+    <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <small class="text-uppercase text-muted">Seleccion curada</small>
+          <h4 class="mb-0"><%= themeContent?.recommendedTitle || "Recomendados para comprar hoy" %></h4>
+        </div>
+        <a href="<%= `${storeBasePath}?sort=featured` %>" class="btn btn-outline-success btn-sm">Ver catalogo</a>
+      </div>
+
+      <div class="row">
+        <% recommendedProducts.forEach(product => { %>
+          <div class="col-md-4 mb-3">
+            <div class="border rounded-4 p-3 h-100">
+              <div class="d-flex gap-3">
+                <img
+                  src="/uploads/<%= product.mainImage || 'no-image.png' %>"
+                  alt="<%= product.name %>"
+                  width="88"
+                  height="88"
+                  style="object-fit:cover; border-radius:16px;"
+                >
+                <div class="flex-grow-1">
+                  <div class="d-flex gap-2 flex-wrap mb-2">
+                    <% if (product.marketingSummary?.isNew) { %>
+                      <span class="badge bg-success">Nuevo</span>
+                    <% } %>
+                    <% if (product.inventorySummary?.hasVariants) { %>
+                      <span class="badge bg-dark">Con opciones</span>
+                    <% } %>
+                  </div>
+                  <h6 class="mb-1"><%= product.name %></h6>
+                  <small class="text-muted d-block mb-2"><%= product.Category?.name %></small>
+                  <div class="text-success fw-bold mb-2">
+                    <% if (product.pricingSummary?.hasPriceRange) { %>
+                      Desde $<%= Number(product.pricingSummary.effectiveMinPrice).toLocaleString() %>
+                    <% } else { %>
+                      $<%= Number(product.price).toLocaleString() %>
+                    <% } %>
+                  </div>
+                  <a href="<%= `${storeBasePath}/producto/${product.id}` %>" class="btn btn-sm btn-outline-success">Ver producto</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (themeContent?.showNewArrivals !== false && newProducts && newProducts.length > 0) { %>
+    <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <small class="text-uppercase text-muted">Novedades</small>
+          <h4 class="mb-0"><%= themeContent?.newArrivalsTitle || "Recien agregados al catalogo" %></h4>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <% newProducts.forEach(product => { %>
+          <div class="col-md-3">
+            <a href="<%= `${storeBasePath}/producto/${product.id}` %>" class="text-decoration-none text-dark">
+              <div class="border rounded-4 p-3 h-100 bg-light">
+                <span class="badge bg-success mb-2">Nuevo</span>
+                <div class="fw-semibold"><%= product.name %></div>
+                <small class="text-muted d-block mb-2"><%= product.Category?.name %></small>
+                <small class="text-muted d-block">
+                  <%= product.inventorySummary?.available %> disponibles
+                </small>
+              </div>
+            </a>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (themeContent?.showFeaturedCategories !== false && featuredCategories && featuredCategories.length > 0) { %>
+    <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <small class="text-uppercase text-muted">Categorias destacadas</small>
+          <h4 class="mb-0"><%= themeContent?.featuredCategoriesTitle || "Explora por categoria" %></h4>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <% featuredCategories.forEach(category => { %>
+          <div class="col-md-4">
+            <a href="<%= `${storeBasePath}?category=${category.id}` %>" class="text-decoration-none text-dark">
+              <div class="border rounded-4 p-4 h-100 bg-light">
+                <small class="text-uppercase text-muted d-block mb-2">Categoria</small>
+                <h5 class="mb-2"><%= category.name %></h5>
+                <p class="text-muted small mb-0">Descubre productos seleccionados dentro de esta categoria.</p>
+              </div>
+            </a>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="row g-4">
+    <div class="col-lg-3">
+      <div class="bg-white p-3 rounded-4 shadow-sm">
+        <h5 class="mb-3">Filtros</h5>
+
+        <form method="GET" action="<%= storeBasePath %>">
+          <div class="mb-3">
+            <label class="form-label">Buscar</label>
+            <input
+              type="text"
+              name="search"
+              class="form-control"
+              placeholder="Nombre o referencia"
+              value="<%= filters?.search || '' %>"
+            >
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Categoria</label>
+            <select name="category" class="form-select">
+              <option value="">Todas</option>
+              <% categories.forEach(cat => { %>
+                <option value="<%= cat.id %>" <%= String(filters?.category || '') === String(cat.id) ? 'selected' : '' %>>
+                  <%= cat.name %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Precio minimo</label>
+            <input
+              type="number"
+              name="minPrice"
+              min="0"
+              step="0.01"
+              class="form-control"
+              value="<%= filters?.minPrice || '' %>"
+            >
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Precio maximo</label>
+            <input
+              type="number"
+              name="maxPrice"
+              min="0"
+              step="0.01"
+              class="form-control"
+              value="<%= filters?.maxPrice || '' %>"
+            >
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Disponibilidad</label>
+            <select name="stock" class="form-select">
+              <option value="">Todos</option>
+              <option value="ready" <%= filters?.stock === 'ready' ? 'selected' : '' %>>
+                Entrega inmediata (+5)
+              </option>
+            </select>
+          </div>
+
+          <div class="form-check form-switch mb-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="variantOnly"
+              name="variantOnly"
+              value="1"
+              <%= filters?.variantOnly === '1' ? 'checked' : '' %>
+            >
+            <label class="form-check-label" for="variantOnly">
+              Solo productos con variantes
+            </label>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button class="btn btn-success" type="submit">Aplicar filtros</button>
+            <a href="<%= storeBasePath %>" class="btn btn-outline-secondary">Limpiar</a>
+          </div>
+        </form>
+
+        <hr>
+
+        <div class="d-flex flex-column gap-2">
+          <small class="text-muted">Accesos rapidos</small>
+          <% categories.forEach(cat => { %>
+            <a
+              href="<%= `${storeBasePath}?category=${cat.id}` %>"
+              class="btn <%= String(filters?.category || '') === String(cat.id) ? 'btn-success' : 'btn-outline-success' %> btn-sm text-start"
+            >
+              <%= cat.name %>
+            </a>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-9">
+      <div class="bg-white p-3 rounded-4 shadow-sm mb-4">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-7">
+            <small class="text-muted d-block mb-1">Resultados</small>
+            <strong><%= summary?.totalProducts || 0 %> productos visibles</strong>
+          </div>
+
+          <div class="col-md-5">
+            <form method="GET" action="<%= storeBasePath %>">
+              <input type="hidden" name="search" value="<%= filters?.search || '' %>">
+              <input type="hidden" name="category" value="<%= filters?.category || '' %>">
+              <input type="hidden" name="minPrice" value="<%= filters?.minPrice || '' %>">
+              <input type="hidden" name="maxPrice" value="<%= filters?.maxPrice || '' %>">
+              <input type="hidden" name="stock" value="<%= filters?.stock || '' %>">
+              <input type="hidden" name="variantOnly" value="<%= filters?.variantOnly || '' %>">
+              <label class="form-label">Ordenar por</label>
+              <select name="sort" class="form-select" onchange="this.form.submit()">
+                <option value="featured" <%= filters?.sort === 'featured' ? 'selected' : '' %>>Destacados</option>
+                <option value="price-asc" <%= filters?.sort === 'price-asc' ? 'selected' : '' %>>Precio: menor a mayor</option>
+                <option value="price-desc" <%= filters?.sort === 'price-desc' ? 'selected' : '' %>>Precio: mayor a menor</option>
+                <option value="name-asc" <%= filters?.sort === 'name-asc' ? 'selected' : '' %>>Nombre: A a Z</option>
+                <option value="name-desc" <%= filters?.sort === 'name-desc' ? 'selected' : '' %>>Nombre: Z a A</option>
+                <option value="stock-desc" <%= filters?.sort === 'stock-desc' ? 'selected' : '' %>>Mayor disponibilidad</option>
+              </select>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <% if(products.length === 0){ %>
+          <div class="col-12">
+            <div class="bg-white rounded-4 shadow-sm p-5 text-center">
+              <h5>No encontramos productos con esos filtros</h5>
+              <p class="text-muted mb-3">Prueba con otra categoria, ajusta el rango de precio o limpia la busqueda.</p>
+              <a href="<%= storeBasePath %>" class="btn btn-outline-success">Ver todo el catalogo</a>
+            </div>
+          </div>
+        <% } %>
+
+        <% products.forEach(product => { %>
+          <%
+            const mainImage = product.mainImage || product.ProductImages?.[0]?.image;
+            const hasVariants = Boolean(product.inventorySummary?.hasVariants);
+            const available = Number(product.inventorySummary?.available) || 0;
+            const variantCount = product.inventorySummary?.variants?.length || 0;
+            const lowStock = product.marketingSummary?.isLowStock;
+          %>
+
+          <div class="col-md-6 col-xl-4 mb-4">
+            <div class="card border-0 shadow-sm h-100 overflow-hidden">
+              <div class="position-relative">
+                <div class="position-absolute top-0 start-0 m-3 d-flex gap-2 flex-wrap" style="z-index: 2;">
+                  <% if (product.marketingSummary?.isNew) { %>
+                    <span class="badge bg-success">Nuevo</span>
+                  <% } %>
+                  <% if (product.marketingSummary?.isRecommended) { %>
+                    <span class="badge bg-info text-dark">Destacado</span>
+                  <% } %>
+                </div>
+                <% if (hasVariants) { %>
+                  <span class="badge bg-dark position-absolute bottom-0 start-0 m-3">Variantes</span>
+                <% } %>
+                <% if (lowStock) { %>
+                  <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-3">Ultimas unidades</span>
+                <% } %>
+
+                <a href="<%= `${storeBasePath}/producto/${product.id}` %>" style="text-decoration:none;">
+                  <img
+                    src="/uploads/<%= mainImage || 'no-image.png' %>"
+                    class="card-img-top"
+                    style="height:240px; object-fit:cover;"
+                  >
+                </a>
+              </div>
+
+              <div class="card-body d-flex flex-column">
+                <small class="text-uppercase text-muted mb-1"><%= product.Category?.name %></small>
+                <h5 class="mb-2"><%= product.name %></h5>
+                <div class="small mb-2">
+                  <span class="text-warning">★</span>
+                  <strong><%= product.reviewSummary?.averageLabel || "0.0" %></strong>
+                  <span class="text-muted">(<%= product.reviewSummary?.count || 0 %>)</span>
+                </div>
+                <p class="text-muted small mb-3"><%= product.description %></p>
+
+                <div class="mb-3">
+                  <% if (product.pricingSummary?.hasPriceRange) { %>
+                    <div class="text-success fw-bold">
+                      Desde $<%= Number(product.pricingSummary.effectiveMinPrice).toLocaleString() %>
+                    </div>
+                    <small class="text-muted">
+                      Hasta $<%= Number(product.pricingSummary.effectiveMaxPrice).toLocaleString() %>
+                    </small>
+                  <% } else { %>
+                    <div class="text-success fw-bold">
+                      $<%= Number(product.pricingSummary?.basePrice || product.price).toLocaleString() %>
+                    </div>
+                  <% } %>
+                </div>
+
+                <div class="d-flex justify-content-between small text-muted mb-3">
+                  <span><%= available %> disponibles</span>
+                  <% if (hasVariants) { %>
+                    <span><%= variantCount %> opciones</span>
+                  <% } else { %>
+                    <span>Compra directa</span>
+                  <% } %>
+                </div>
+
+                <div class="mt-auto d-grid gap-2">
+                  <a href="<%= `${storeBasePath}/producto/${product.id}` %>" class="btn btn-outline-success">
+                    <%= hasVariants ? 'Ver opciones' : 'Ver producto' %>
+                  </a>
+
+                  <% if(!hasVariants){ %>
+                    <form method="POST" action="<%= `${storeBasePath}/cart/add` %>">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <input type="hidden" name="productId" value="<%= product.id %>">
+                      <button class="btn btn-success w-100" onclick="event.stopPropagation();">
+                        Agregar al carrito
+                      </button>
+                    </form>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</div>

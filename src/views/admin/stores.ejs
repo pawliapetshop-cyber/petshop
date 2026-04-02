@@ -1,0 +1,437 @@
+<h2 class="mb-4">Tiendas / Entidades</h2>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'success' ? 'success' : 'danger' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<% if (errorMessages && errorMessages.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      <% errorMessages.forEach(message => { %>
+        <li><%= message %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<div class="bg-white shadow rounded p-4 mb-4">
+  <h4 class="mb-3">Crear nueva tienda</h4>
+
+  <form method="POST" action="/admin/stores/create?_csrf=<%= csrfToken %>" enctype="multipart/form-data" class="row g-3">
+
+    <div class="col-md-4">
+      <label class="form-label">Nombre</label>
+      <input type="text" name="name" class="form-control" value="<%= formData?.name || '' %>" placeholder="Ej. Moda Ana" required>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Slug</label>
+      <input type="text" name="slug" class="form-control" value="<%= formData?.slug || '' %>" placeholder="moda-ana" required>
+      <div class="form-text">Se usara en la URL: `/s/slug`.</div>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Correo de contacto</label>
+      <input type="email" name="contactEmail" class="form-control" value="<%= formData?.contactEmail || '' %>">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Telefono</label>
+      <input type="text" name="contactPhone" class="form-control" value="<%= formData?.contactPhone || '' %>">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">WhatsApp</label>
+      <input type="text" name="whatsapp" class="form-control" value="<%= formData?.whatsapp || '' %>">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Logo</label>
+      <input type="file" name="storeLogo" class="form-control" accept="image/*">
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Color primario</label>
+      <input type="color" name="primaryColor" class="form-control form-control-color" value="<%= formData?.primaryColor || '#198754' %>">
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Color secundario</label>
+      <input type="color" name="secondaryColor" class="form-control form-control-color" value="<%= formData?.secondaryColor || '#212529' %>">
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Fondo pagina</label>
+      <input type="color" name="backgroundColor" class="form-control form-control-color" value="<%= formData?.backgroundColor || '#f5f5f5' %>">
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Fondo secciones</label>
+      <input type="color" name="surfaceColor" class="form-control form-control-color" value="<%= formData?.surfaceColor || '#ffffff' %>">
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Boton principal</label>
+      <input type="color" name="buttonPrimaryColor" class="form-control form-control-color" value="<%= formData?.buttonPrimaryColor || formData?.primaryColor || '#198754' %>">
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Boton secundario</label>
+      <input type="color" name="buttonSecondaryColor" class="form-control form-control-color" value="<%= formData?.buttonSecondaryColor || formData?.secondaryColor || '#212529' %>">
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Etiqueta portada</label>
+      <input type="text" name="heroEyebrow" class="form-control" value="<%= formData?.heroEyebrow || 'Catalogo comercial' %>">
+    </div>
+
+    <div class="col-md-5">
+      <label class="form-label">Titulo portada</label>
+      <input type="text" name="heroTitle" class="form-control" value="<%= formData?.heroTitle || '' %>" placeholder="Ej. Descubre lo mejor para tu estilo">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Subtitulo portada</label>
+      <input type="text" name="heroSubtitle" class="form-control" value="<%= formData?.heroSubtitle || '' %>" placeholder="Texto corto comercial">
+    </div>
+
+    <div class="col-md-4">
+      <div class="form-check form-switch mt-4">
+        <input class="form-check-input" type="checkbox" id="showRecommendedCreate" name="showRecommended" <%= formData?.showRecommended !== false ? 'checked' : '' %>>
+        <label class="form-check-label" for="showRecommendedCreate">Mostrar recomendados</label>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Titulo recomendados</label>
+      <input type="text" name="recommendedTitle" class="form-control" value="<%= formData?.recommendedTitle || '' %>" placeholder="Ej. Lo mejor para hoy">
+    </div>
+
+    <div class="col-md-4">
+      <div class="form-check form-switch mt-4">
+        <input class="form-check-input" type="checkbox" id="showNewArrivalsCreate" name="showNewArrivals" <%= formData?.showNewArrivals !== false ? 'checked' : '' %>>
+        <label class="form-check-label" for="showNewArrivalsCreate">Mostrar novedades</label>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Titulo novedades</label>
+      <input type="text" name="newArrivalsTitle" class="form-control" value="<%= formData?.newArrivalsTitle || '' %>" placeholder="Ej. Novedades de temporada">
+    </div>
+
+    <div class="col-md-4">
+      <div class="form-check form-switch mt-4">
+        <input class="form-check-input" type="checkbox" id="showFeaturedCategoriesCreate" name="showFeaturedCategories" <%= formData?.showFeaturedCategories !== false ? 'checked' : '' %>>
+        <label class="form-check-label" for="showFeaturedCategoriesCreate">Mostrar categorias destacadas</label>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Titulo categorias destacadas</label>
+      <input type="text" name="featuredCategoriesTitle" class="form-control" value="<%= formData?.featuredCategoriesTitle || '' %>" placeholder="Ej. Compra por categoria">
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Categorias destacadas</label>
+      <select name="featuredCategoryIds" class="form-select" multiple size="4">
+        <% categories.forEach(category => { %>
+          <% if (!formData?.storeId || Number(category.StoreId) === Number(formData?.storeId) || !category.StoreId) { %>
+            <option value="<%= category.id %>" <%= (formData?.featuredCategoryIds || []).map(String).includes(String(category.id)) ? "selected" : "" %>>
+              <%= category.name %>
+            </option>
+          <% } %>
+        <% }) %>
+      </select>
+      <div class="form-text">Selecciona hasta 3 categorias para destacarlas en portada.</div>
+    </div>
+
+    <% [1, 2].forEach(index => { %>
+      <% const promo = (formData?.promoSections || [])[index - 1] || {}; %>
+      <div class="col-12">
+        <div class="border rounded p-3">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Seccion promocional <%= index %></h5>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="promo-active-create-<%= index %>" name="promoActive<%= index %>" <%= promo.isActive !== false ? 'checked' : '' %>>
+              <label class="form-check-label" for="promo-active-create-<%= index %>">Activa</label>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Etiqueta</label>
+              <input type="text" name="promoEyebrow<%= index %>" class="form-control" value="<%= promo.eyebrow || '' %>" placeholder="Ej. Oferta especial">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Titulo</label>
+              <input type="text" name="promoTitle<%= index %>" class="form-control" value="<%= promo.title || '' %>" placeholder="Texto principal de la promo">
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Texto boton</label>
+              <input type="text" name="promoButtonLabel<%= index %>" class="form-control" value="<%= promo.buttonLabel || '' %>" placeholder="Ver mas">
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">Imagen</label>
+              <input type="file" name="promoImage<%= index %>" class="form-control" accept="image/*">
+            </div>
+
+            <div class="col-md-7">
+              <label class="form-label">Descripcion</label>
+              <input type="text" name="promoDescription<%= index %>" class="form-control" value="<%= promo.description || '' %>" placeholder="Texto de apoyo corto para la promocion">
+            </div>
+
+            <div class="col-md-5">
+              <label class="form-label">URL del boton</label>
+              <input type="text" name="promoButtonUrl<%= index %>" class="form-control" value="<%= promo.buttonUrl || '' %>" placeholder="/s/slug?category=1 o https://...">
+            </div>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+
+    <div class="col-md-2 d-flex align-items-end">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="storeActive" name="isActive" <%= formData?.isActive !== false ? 'checked' : '' %>>
+        <label class="form-check-label" for="storeActive">Activa</label>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <button class="btn btn-success" type="submit">Crear tienda</button>
+    </div>
+  </form>
+</div>
+
+<div class="bg-white shadow rounded p-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Tiendas registradas</h4>
+    <small class="text-muted"><%= stores.length %> registros</small>
+  </div>
+
+  <% if (stores.length === 0) { %>
+    <p class="text-muted mb-0">Todavia no hay tiendas registradas.</p>
+  <% } %>
+
+  <% stores.forEach(store => { %>
+    <form method="POST" action="/admin/stores/<%= store.id %>/update?_csrf=<%= csrfToken %>" enctype="multipart/form-data" class="border rounded p-3 mb-3">
+
+      <div class="row g-3 align-items-end">
+        <div class="col-md-2">
+          <% if (store.logo) { %>
+            <img
+              src="/uploads/<%= store.logo %>"
+              alt="<%= store.name %>"
+              class="img-fluid rounded border"
+              style="max-height:88px; object-fit:contain;"
+            >
+          <% } else { %>
+            <div class="border rounded text-muted d-flex align-items-center justify-content-center" style="height:88px;">
+              Sin logo
+            </div>
+          <% } %>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Nombre</label>
+          <input type="text" name="name" class="form-control" value="<%= store.name %>" required>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Slug</label>
+          <input type="text" name="slug" class="form-control" value="<%= store.slug %>" required>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Correo</label>
+          <input type="email" name="contactEmail" class="form-control" value="<%= store.contactEmail || '' %>">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Telefono</label>
+          <input type="text" name="contactPhone" class="form-control" value="<%= store.contactPhone || '' %>">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">WhatsApp</label>
+          <input type="text" name="whatsapp" class="form-control" value="<%= store.whatsapp || '' %>">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Cambiar logo</label>
+          <input type="file" name="storeLogo" class="form-control" accept="image/*">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Primario</label>
+          <input type="color" name="primaryColor" class="form-control form-control-color" value="<%= store.primaryColor || '#198754' %>">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Secundario</label>
+          <input type="color" name="secondaryColor" class="form-control form-control-color" value="<%= store.secondaryColor || '#212529' %>">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Fondo pagina</label>
+          <input type="color" name="backgroundColor" class="form-control form-control-color" value="<%= store.themeConfig?.backgroundColor || '#f5f5f5' %>">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Fondo secciones</label>
+          <input type="color" name="surfaceColor" class="form-control form-control-color" value="<%= store.themeConfig?.surfaceColor || '#ffffff' %>">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Boton principal</label>
+          <input type="color" name="buttonPrimaryColor" class="form-control form-control-color" value="<%= store.themeConfig?.buttonPrimaryColor || store.primaryColor || '#198754' %>">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Boton secundario</label>
+          <input type="color" name="buttonSecondaryColor" class="form-control form-control-color" value="<%= store.themeConfig?.buttonSecondaryColor || store.secondaryColor || '#212529' %>">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Etiqueta portada</label>
+          <input type="text" name="heroEyebrow" class="form-control" value="<%= store.themeConfig?.heroEyebrow || 'Catalogo comercial' %>">
+        </div>
+
+        <div class="col-md-5">
+          <label class="form-label">Titulo portada</label>
+          <input type="text" name="heroTitle" class="form-control" value="<%= store.themeConfig?.heroTitle || '' %>">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Subtitulo portada</label>
+          <input type="text" name="heroSubtitle" class="form-control" value="<%= store.themeConfig?.heroSubtitle || '' %>">
+        </div>
+
+        <div class="col-md-4">
+          <div class="form-check form-switch mt-4">
+            <input class="form-check-input" type="checkbox" id="showRecommended-<%= store.id %>" name="showRecommended" <%= store.themeConfig?.showRecommended !== false ? 'checked' : '' %>>
+            <label class="form-check-label" for="showRecommended-<%= store.id %>">Mostrar recomendados</label>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Titulo recomendados</label>
+          <input type="text" name="recommendedTitle" class="form-control" value="<%= store.themeConfig?.recommendedTitle || '' %>">
+        </div>
+
+        <div class="col-md-4">
+          <div class="form-check form-switch mt-4">
+            <input class="form-check-input" type="checkbox" id="showNewArrivals-<%= store.id %>" name="showNewArrivals" <%= store.themeConfig?.showNewArrivals !== false ? 'checked' : '' %>>
+            <label class="form-check-label" for="showNewArrivals-<%= store.id %>">Mostrar novedades</label>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Titulo novedades</label>
+          <input type="text" name="newArrivalsTitle" class="form-control" value="<%= store.themeConfig?.newArrivalsTitle || '' %>">
+        </div>
+
+        <div class="col-md-4">
+          <div class="form-check form-switch mt-4">
+            <input class="form-check-input" type="checkbox" id="showFeaturedCategories-<%= store.id %>" name="showFeaturedCategories" <%= store.themeConfig?.showFeaturedCategories !== false ? 'checked' : '' %>>
+            <label class="form-check-label" for="showFeaturedCategories-<%= store.id %>">Mostrar categorias destacadas</label>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Titulo categorias destacadas</label>
+          <input type="text" name="featuredCategoriesTitle" class="form-control" value="<%= store.themeConfig?.featuredCategoriesTitle || '' %>">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Categorias destacadas</label>
+          <select name="featuredCategoryIds" class="form-select" multiple size="4">
+            <% categories.forEach(category => { %>
+              <% if (Number(category.StoreId) === Number(store.id)) { %>
+                <option value="<%= category.id %>" <%= (store.themeConfig?.featuredCategoryIds || []).map(String).includes(String(category.id)) ? "selected" : "" %>>
+                  <%= category.name %>
+                </option>
+              <% } %>
+            <% }) %>
+          </select>
+        </div>
+
+        <% [1, 2].forEach(index => { %>
+          <% const promo = (store.themeConfig?.promoSections || [])[index - 1] || {}; %>
+          <div class="col-12">
+            <div class="border rounded p-3 bg-light">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0">Seccion promocional <%= index %></h6>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="promo-active-<%= store.id %>-<%= index %>" name="promoActive<%= index %>" <%= promo.isActive !== false ? 'checked' : '' %>>
+                  <label class="form-check-label" for="promo-active-<%= store.id %>-<%= index %>">Activa</label>
+                </div>
+              </div>
+
+              <div class="row g-3 align-items-end">
+                <% if (promo.image) { %>
+                  <div class="col-md-2">
+                    <img src="/uploads/<%= promo.image %>" alt="Promo <%= index %>" class="img-fluid rounded border" style="max-height:96px; object-fit:cover;">
+                  </div>
+                <% } %>
+
+                <div class="<%= promo.image ? 'col-md-2' : 'col-md-3' %>">
+                  <label class="form-label">Etiqueta</label>
+                  <input type="text" name="promoEyebrow<%= index %>" class="form-control" value="<%= promo.eyebrow || '' %>">
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label">Titulo</label>
+                  <input type="text" name="promoTitle<%= index %>" class="form-control" value="<%= promo.title || '' %>">
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label">Descripcion</label>
+                  <input type="text" name="promoDescription<%= index %>" class="form-control" value="<%= promo.description || '' %>">
+                </div>
+
+                <div class="col-md-2">
+                  <label class="form-label">Cambiar imagen</label>
+                  <input type="file" name="promoImage<%= index %>" class="form-control" accept="image/*">
+                </div>
+
+                <div class="col-md-2">
+                  <label class="form-label">Texto boton</label>
+                  <input type="text" name="promoButtonLabel<%= index %>" class="form-control" value="<%= promo.buttonLabel || '' %>">
+                </div>
+
+                <div class="col-md-5">
+                  <label class="form-label">URL del boton</label>
+                  <input type="text" name="promoButtonUrl<%= index %>" class="form-control" value="<%= promo.buttonUrl || '' %>">
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+
+        <div class="col-md-2 d-flex align-items-end">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="store-<%= store.id %>" name="isActive" <%= store.isActive ? 'checked' : '' %>>
+            <label class="form-check-label" for="store-<%= store.id %>">Activa</label>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <small class="text-muted">
+            Admins asociados: <%= store.Admins?.length || 0 %> |
+            URL publica: <a href="/s/<%= store.slug %>" target="_blank">/s/<%= store.slug %></a>
+          </small>
+        </div>
+
+        <div class="col-md-6 text-md-end">
+          <a href="/admin/shipping-settings?storeId=<%= store.id %>" class="btn btn-outline-secondary btn-sm">Configurar envios</a>
+          <button class="btn btn-primary btn-sm" type="submit">Guardar cambios</button>
+        </div>
+      </div>
+    </form>
+  <% }) %>
+</div>

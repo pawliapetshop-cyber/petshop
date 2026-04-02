@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <%
+    const currentStore = typeof store !== "undefined" ? store : null;
+    const currentCart = typeof cart !== "undefined" ? cart : [];
+    const currentStoreBasePath = typeof storeBasePath !== "undefined" && storeBasePath
+      ? storeBasePath
+      : (currentStore?.slug ? `/s/${currentStore.slug}` : "/tienda");
+    const primaryColor = currentStore?.primaryColor || "#198754";
+    const secondaryColor = currentStore?.secondaryColor || "#212529";
+    const backgroundColor = currentStore?.themeConfig?.backgroundColor || "#f5f5f5";
+    const surfaceColor = currentStore?.themeConfig?.surfaceColor || "#ffffff";
+    const buttonPrimaryColor = currentStore?.themeConfig?.buttonPrimaryColor || primaryColor;
+    const buttonSecondaryColor = currentStore?.themeConfig?.buttonSecondaryColor || secondaryColor;
+    const storeLogo = currentStore?.logo ? `/uploads/${currentStore.logo}` : "/logo.jpeg";
+  %>
+
+  <title><%= currentStore?.name || "Pawlia" %></title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --brand-primary: <%= primaryColor %>;
+      --brand-secondary: <%= secondaryColor %>;
+      --brand-primary-soft: color-mix(in srgb, <%= primaryColor %> 16%, white);
+      --store-background: <%= backgroundColor %>;
+      --store-surface: <%= surfaceColor %>;
+      --button-primary: <%= buttonPrimaryColor %>;
+      --button-secondary: <%= buttonSecondaryColor %>;
+      --button-primary-soft: color-mix(in srgb, <%= buttonPrimaryColor %> 14%, white);
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top left, var(--brand-primary-soft), transparent 32%),
+        var(--store-background);
+    }
+
+    .ad-box {
+      background: var(--store-surface);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+
+    .bg-white,
+    .navbar.bg-white,
+    .table.bg-white {
+      background-color: var(--store-surface) !important;
+    }
+
+    .store-shell {
+      position: relative;
+    }
+
+    .store-shell::before {
+      content: "";
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--brand-primary), var(--brand-secondary));
+      z-index: 1032;
+    }
+
+    .brand-logo {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      background: white;
+      border-radius: 16px;
+      padding: 6px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-brand {
+      background: var(--button-primary);
+      border-color: var(--button-primary);
+      color: white;
+    }
+
+    .btn-brand:hover,
+    .btn-brand:focus {
+      background: var(--button-secondary);
+      border-color: var(--button-secondary);
+      color: white;
+    }
+
+    .btn-success {
+      background: var(--button-primary);
+      border-color: var(--button-primary);
+    }
+
+    .btn-success:hover,
+    .btn-success:focus,
+    .btn-success:active {
+      background: var(--button-secondary) !important;
+      border-color: var(--button-secondary) !important;
+    }
+
+    .btn-outline-success {
+      color: var(--button-secondary);
+      border-color: var(--button-secondary);
+      background: transparent;
+    }
+
+    .btn-outline-success:hover,
+    .btn-outline-success:focus,
+    .btn-outline-success:active {
+      color: white !important;
+      background: var(--button-secondary) !important;
+      border-color: var(--button-secondary) !important;
+    }
+
+    .form-check-input:checked {
+      background-color: var(--button-primary);
+      border-color: var(--button-primary);
+    }
+
+    .page-surface {
+      background: var(--store-surface);
+    }
+
+    .brand-accent {
+      color: var(--brand-primary);
+    }
+  </style>
+</head>
+<body class="store-shell">
+  <%
+    let totalItems = 0;
+    if (currentCart) {
+      for (let i = 0; i < currentCart.length; i++) {
+        totalItems += Number(currentCart[i].quantity) || 0;
+      }
+    }
+  %>
+
+  <nav class="navbar bg-white shadow-sm p-3 mb-4">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <a href="<%= currentStoreBasePath %>" class="d-flex align-items-center gap-3" style="text-decoration:none; color:black;">
+        <img src="<%= storeLogo %>" alt="<%= currentStore?.name || 'Pawlia' %>" class="brand-logo">
+        <div>
+          <h4 class="m-0"><%= currentStore?.name || "Pawlia" %></h4>
+          <small class="text-muted">
+            <%= currentStore?.slug ? `Catalogo de ${currentStore.name}` : "Tienda para mascotas" %>
+          </small>
+        </div>
+      </a>
+
+      <form class="d-flex flex-grow-1" method="GET" action="<%= currentStoreBasePath %>" style="max-width:560px;">
+        <input
+          type="text"
+          name="search"
+          class="form-control me-2"
+          placeholder="Buscar alimentos, accesorios, arenas..."
+          value="<%= currentSearch || "" %>"
+        >
+        <button class="btn btn-brand">Buscar</button>
+      </form>
+
+      <div class="d-flex align-items-center gap-2">
+        <a href="<%= `${currentStoreBasePath}/contacto` %>" class="btn btn-outline-secondary">
+          Contactanos
+        </a>
+        <a href="<%= `${currentStoreBasePath}/cart` %>" class="btn btn-brand position-relative">
+          Carrito
+
+          <% if (totalItems > 0) { %>
+            <span style="position:absolute; top:-8px; right:-8px; background:red; color:white; border-radius:50%; font-size:12px; padding:2px 6px;">
+              <%= totalItems %>
+            </span>
+          <% } %>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-2 d-none d-md-block">
+        <% if (typeof sideAds !== "undefined" && sideAds?.left) { %>
+          <div class="ad-box mb-3">
+            <% if (sideAds.left.targetUrl) { %>
+              <a href="<%= sideAds.left.targetUrl %>" target="_blank" rel="noopener noreferrer">
+                <img src="/uploads/<%= sideAds.left.image %>" class="img-fluid rounded" alt="<%= sideAds.left.title || 'Publicidad izquierda' %>">
+              </a>
+            <% } else { %>
+              <img src="/uploads/<%= sideAds.left.image %>" class="img-fluid rounded" alt="<%= sideAds.left.title || 'Publicidad izquierda' %>">
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="col-md-8">
+        <%- body %>
+      </div>
+
+      <div class="col-md-2 d-none d-md-block">
+        <% if (typeof sideAds !== "undefined" && sideAds?.right) { %>
+          <div class="ad-box mb-3">
+            <% if (sideAds.right.targetUrl) { %>
+              <a href="<%= sideAds.right.targetUrl %>" target="_blank" rel="noopener noreferrer">
+                <img src="/uploads/<%= sideAds.right.image %>" class="img-fluid rounded" alt="<%= sideAds.right.title || 'Publicidad derecha' %>">
+              </a>
+            <% } else { %>
+              <img src="/uploads/<%= sideAds.right.image %>" class="img-fluid rounded" alt="<%= sideAds.right.title || 'Publicidad derecha' %>">
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

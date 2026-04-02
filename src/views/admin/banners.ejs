@@ -1,0 +1,205 @@
+<h2 class="mb-4">Banners de tienda</h2>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'success' ? 'success' : 'danger' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<% if (errorMessages && errorMessages.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      <% errorMessages.forEach(message => { %>
+        <li><%= message %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<div class="bg-white shadow rounded p-4 mb-4">
+  <h4 class="mb-3">Crear nuevo banner</h4>
+
+  <form method="POST" action="/admin/banners/create?_csrf=<%= csrfToken %>" enctype="multipart/form-data" class="row g-3">
+    <div class="col-md-4">
+      <label class="form-label">Titulo</label>
+      <input
+        type="text"
+        name="title"
+        class="form-control"
+        value="<%= formData?.title || '' %>"
+        placeholder="Ej. Nuevo descanso para tu gato"
+        required
+      >
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Subtitulo</label>
+      <input
+        type="text"
+        name="subtitle"
+        class="form-control"
+        value="<%= formData?.subtitle || '' %>"
+        placeholder="Texto breve opcional"
+      >
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Texto del boton</label>
+      <input
+        type="text"
+        name="buttonLabel"
+        class="form-control"
+        value="<%= formData?.buttonLabel || 'Ver producto' %>"
+        placeholder="Ver producto"
+      >
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Producto destino</label>
+      <select name="productId" class="form-select" required>
+        <option value="">Selecciona un producto</option>
+        <% products.forEach(product => { %>
+          <option value="<%= product.id %>" <%= String(formData?.productId || '') === String(product.id) ? 'selected' : '' %>>
+            <%= product.name %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Orden</label>
+      <input
+        type="number"
+        name="sortOrder"
+        min="0"
+        step="1"
+        class="form-control"
+        value="<%= formData?.sortOrder ?? 0 %>"
+      >
+    </div>
+
+    <div class="col-md-3 d-flex align-items-end">
+      <div class="form-check form-switch">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="bannerActive"
+          name="isActive"
+          <%= formData?.isActive !== false ? 'checked' : '' %>
+        >
+        <label class="form-check-label" for="bannerActive">Activo en tienda</label>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <label class="form-label">Imagen del banner</label>
+      <input type="file" name="bannerImage" class="form-control" accept="image/*" required>
+      <div class="form-text">Usa una imagen horizontal para que se vea mejor en portada.</div>
+    </div>
+
+    <div class="col-12">
+      <button class="btn btn-success" type="submit">Crear banner</button>
+    </div>
+  </form>
+</div>
+
+<div class="bg-white shadow rounded p-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Banners configurados</h4>
+    <small class="text-muted"><%= banners.length %> registros</small>
+  </div>
+
+  <% if (banners.length === 0) { %>
+    <p class="text-muted mb-0">Todavia no hay banners creados para esta tienda.</p>
+  <% } %>
+
+  <% banners.forEach(banner => { %>
+    <div class="border rounded p-3 mb-3">
+      <div class="row g-3">
+        <div class="col-lg-3">
+          <img
+            src="/uploads/<%= banner.image %>"
+            alt="<%= banner.title %>"
+            class="img-fluid rounded border"
+            style="width:100%; max-height:180px; object-fit:cover;"
+          >
+        </div>
+
+        <div class="col-lg-9">
+          <form method="POST" action="/admin/banners/<%= banner.id %>/update?_csrf=<%= csrfToken %>" enctype="multipart/form-data" class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Titulo</label>
+              <input type="text" name="title" class="form-control" value="<%= banner.title %>" required>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Subtitulo</label>
+              <input type="text" name="subtitle" class="form-control" value="<%= banner.subtitle || '' %>">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Texto del boton</label>
+              <input type="text" name="buttonLabel" class="form-control" value="<%= banner.buttonLabel || 'Ver producto' %>">
+            </div>
+
+            <div class="col-md-5">
+              <label class="form-label">Producto destino</label>
+              <select name="productId" class="form-select" required>
+                <% products.forEach(product => { %>
+                  <option value="<%= product.id %>" <%= String(banner.ProductId) === String(product.id) ? 'selected' : '' %>>
+                    <%= product.name %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">Orden</label>
+              <input type="number" name="sortOrder" min="0" step="1" class="form-control" value="<%= banner.sortOrder %>">
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Reemplazar imagen</label>
+              <input type="file" name="bannerImage" class="form-control" accept="image/*">
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="banner-<%= banner.id %>" name="isActive" <%= banner.isActive ? 'checked' : '' %>>
+                <label class="form-check-label" for="banner-<%= banner.id %>">Activo</label>
+              </div>
+            </div>
+
+            <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
+              <button class="btn btn-primary btn-sm" type="submit">Guardar cambios</button>
+              <button
+                class="btn btn-outline-secondary btn-sm"
+                type="submit"
+                formaction="/admin/banners/<%= banner.id %>/toggle-status?_csrf=<%= csrfToken %>"
+                formmethod="POST"
+                formenctype="application/x-www-form-urlencoded"
+              >
+                <%= banner.isActive ? 'Desactivar' : 'Activar' %>
+              </button>
+              <button
+                class="btn btn-danger btn-sm"
+                type="submit"
+                formaction="/admin/banners/<%= banner.id %>/delete?_csrf=<%= csrfToken %>"
+                formmethod="POST"
+                formenctype="application/x-www-form-urlencoded"
+                onclick="return confirm('Eliminar este banner?')"
+              >
+                Eliminar
+              </button>
+
+              <span class="badge <%= banner.isActive ? 'bg-success' : 'bg-secondary' %>">
+                <%= banner.isActive ? 'Visible en tienda' : 'Oculto' %>
+              </span>
+              <small class="text-muted">Destino: <%= banner.Product?.name || 'Sin producto' %></small>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+</div>

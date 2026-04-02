@@ -1,0 +1,43 @@
+<h2>Categorias</h2>
+
+<% if (errorMessages && errorMessages.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      <% errorMessages.forEach(message => { %>
+        <li><%= message %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="POST" action="/admin/categories/create" class="mb-3 d-flex gap-2">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input
+    name="name"
+    class="form-control"
+    placeholder="Nueva categoria"
+    value="<%= formData?.name || '' %>"
+    required
+  >
+  <button class="btn btn-primary">Crear</button>
+</form>
+
+<ul class="list-group">
+  <% categories.forEach(c => { %>
+    <li class="list-group-item d-flex justify-content-between">
+      <%= c.name %>
+
+      <form
+        method="POST"
+        action="/admin/categories/delete/<%= c.id %>"
+        class="d-inline"
+        onsubmit="return confirm('Eliminar esta categoria?')"
+      >
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn-danger btn-sm" type="submit">
+          Eliminar
+        </button>
+      </form>
+    </li>
+  <% }) %>
+</ul>

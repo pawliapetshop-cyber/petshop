@@ -1,0 +1,386 @@
+<h2 class="mb-4">Checkout</h2>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="bg-white p-4 shadow rounded">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Resumen de compra</h5>
+        <span class="badge bg-success"><%= cart.length %> items</span>
+      </div>
+      <hr>
+
+      <% cart.forEach(item => { %>
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <div class="fw-semibold">
+              <%= item.name %>
+              <% if (item.variantName) { %>
+                (<%= item.variantName %>)
+              <% } %>
+            </div>
+            <small class="text-muted">
+              <%= item.quantity %> x $<%= Number(item.price).toLocaleString("es-CO") %>
+            </small>
+          </div>
+          <strong>$<%= Number(item.price * item.quantity).toLocaleString("es-CO") %></strong>
+        </div>
+      <% }) %>
+
+      <hr>
+
+      <div class="d-flex justify-content-between mb-2">
+        <span>Subtotal</span>
+        <span id="checkoutSubtotal" data-subtotal="<%= Number(checkoutSummary?.subtotal || 0) %>">
+          $<%= Number(checkoutSummary?.subtotal || 0).toLocaleString("es-CO") %>
+        </span>
+      </div>
+
+      <div class="d-flex justify-content-between mb-2 <%= checkoutSummary?.couponApplied ? '' : 'd-none' %>" id="checkoutDiscountRow">
+        <span>
+          Descuento
+          <% if (checkoutSummary?.couponCode) { %>
+            (<%= checkoutSummary.couponCode %>)
+          <% } %>
+        </span>
+        <span class="text-success" id="checkoutDiscount" data-discount="<%= Number(checkoutSummary?.discountAmount || 0) %>">
+          -$<%= Number(checkoutSummary?.discountAmount || 0).toLocaleString("es-CO") %>
+        </span>
+      </div>
+
+      <div class="d-flex justify-content-between mb-2">
+        <span>Envio</span>
+        <span id="checkoutShipping" data-shipping="<%= checkoutSummary?.shippingCost ?? '' %>">
+          <% if (checkoutSummary?.pendingShipping) { %>
+            Por calcular
+          <% } else if (checkoutSummary?.freeShipping) { %>
+            Gratis
+          <% } else { %>
+            $<%= Number(checkoutSummary?.shippingCost || 0).toLocaleString("es-CO") %>
+          <% } %>
+        </span>
+      </div>
+
+      <div class="text-muted small mb-3" id="checkoutShippingLabel">
+        <%= checkoutSummary?.shippingLabel || "Se calcula con tu ciudad" %>
+      </div>
+
+      <% if (checkoutSummary?.couponApplied) { %>
+        <div class="text-muted small mb-3" id="checkoutCouponLabel">
+          Cupon aplicado: <%= checkoutSummary.couponTitle || checkoutSummary.couponCode %>
+        </div>
+      <% } %>
+
+      <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+        <strong>Total estimado</strong>
+        <strong class="text-success" id="checkoutTotal">
+          $<%= Number(checkoutSummary?.total || 0).toLocaleString("es-CO") %>
+        </strong>
+      </div>
+
+      <div class="alert alert-light border mt-4 mb-0">
+        <strong>Compra segura</strong>
+        <div class="small text-muted mt-1">
+          Confirmaremos disponibilidad y datos de pago por WhatsApp despues de registrar tu pedido.
+        </div>
+      </div>
+
+      <div class="row g-2 mt-3">
+        <div class="col-4">
+          <div class="border rounded p-2 text-center h-100">
+            <div class="fw-semibold small">Reserva</div>
+            <div class="text-muted small">Tu pedido separa inventario</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="border rounded p-2 text-center h-100">
+            <div class="fw-semibold small">Confirmacion</div>
+            <div class="text-muted small">Te contactamos por WhatsApp</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="border rounded p-2 text-center h-100">
+            <div class="fw-semibold small">Despacho</div>
+            <div class="text-muted small">Seguimiento segun ciudad</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <form method="POST" class="bg-white p-4 shadow rounded">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <% if (errorMessages && errorMessages.length > 0) { %>
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            <% errorMessages.forEach(message => { %>
+              <li><%= message %></li>
+            <% }) %>
+          </ul>
+        </div>
+      <% } %>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Nombre completo</label>
+          <input
+            name="name"
+            class="form-control"
+            placeholder="Nombre completo"
+            value="<%= formData?.name || '' %>"
+            required
+          >
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Documento</label>
+          <input
+            name="document"
+            class="form-control"
+            placeholder="Cedula"
+            value="<%= formData?.document || '' %>"
+            required
+          >
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Correo</label>
+          <input
+            name="email"
+            type="email"
+            class="form-control"
+            placeholder="Correo"
+            value="<%= formData?.email || '' %>"
+          >
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Telefono</label>
+          <input
+            name="phone"
+            class="form-control"
+            placeholder="Telefono"
+            value="<%= formData?.phone || '' %>"
+            required
+          >
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Ciudad</label>
+          <select
+            name="city"
+            id="city"
+            class="form-control"
+            required
+          >
+            <option value="">Selecciona una ciudad</option>
+            <% shippingCities.forEach(city => { %>
+              <option value="<%= city.value %>" <%= formData?.city === city.value ? "selected" : "" %>>
+                <%= city.label %>
+              </option>
+            <% }) %>
+          </select>
+          <div class="form-text" id="cityPolicyHelp">
+            Selecciona tu ciudad para ver costo de envio y disponibilidad de contraentrega.
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Direccion</label>
+          <input
+            name="address"
+            class="form-control"
+            placeholder="Direccion completa"
+            value="<%= formData?.address || '' %>"
+            required
+          >
+        </div>
+      </div>
+
+      <h5 class="mt-2">Metodo de pago</h5>
+
+      <select name="paymentMethod" id="paymentMethod" class="form-control mb-3" required>
+        <option value="">Seleccione</option>
+        <option value="transferencia" <%= formData?.paymentMethod === "transferencia" ? "selected" : "" %>>
+          Transferencia (Nequi, Bancolombia, Daviplata)
+        </option>
+        <option value="contraentrega" <%= formData?.paymentMethod === "contraentrega" ? "selected" : "" %>>
+          Contraentrega
+        </option>
+      </select>
+
+      <div id="paymentHelp" class="alert alert-light border small mb-4">
+        Elige tu metodo de pago para ver recomendaciones antes de finalizar el pedido.
+      </div>
+
+      <div class="border rounded p-3 bg-light mb-4">
+        <div class="fw-semibold mb-2">Que pasa despues de confirmar</div>
+        <div class="small text-muted">1. Revisamos disponibilidad final y datos del pedido.</div>
+        <div class="small text-muted">2. Te enviamos confirmacion por WhatsApp.</div>
+        <div class="small text-muted">3. Coordinamos pago y entrega segun tu ciudad.</div>
+      </div>
+
+      <div class="border rounded p-3 bg-light mb-4">
+        <div class="fw-semibold mb-2">Cupon de descuento</div>
+        <label class="form-label">Codigo</label>
+        <input
+          name="couponCode"
+          id="couponCode"
+          class="form-control"
+          placeholder="Ej. BIENVENIDA10"
+          value="<%= formData?.couponCode || '' %>"
+        >
+        <div class="form-text">
+          Si el codigo es valido, el descuento se aplicara al confirmar el pedido. Algunos cupones para todo el carrito exigen una compra minima.
+        </div>
+      </div>
+
+      <button class="btn btn-success w-100" id="confirmButton">
+        <% if (checkoutSummary?.pendingShipping) { %>
+          Confirmar pedido
+        <% } else { %>
+          Confirmar pedido por $<%= Number(checkoutSummary?.total || 0).toLocaleString("es-CO") %>
+        <% } %>
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const cityInput = document.getElementById("city");
+  const paymentSelect = document.getElementById("paymentMethod");
+  const paymentHelp = document.getElementById("paymentHelp");
+  const contra = paymentSelect.querySelector('option[value="contraentrega"]');
+  const cityPolicyHelp = document.getElementById("cityPolicyHelp");
+  const shippingConfig = <%- JSON.stringify(shippingConfig || { cities: [] }) %>;
+  const checkoutSubtotal = Number(document.getElementById("checkoutSubtotal").dataset.subtotal || 0);
+  const checkoutDiscountRow = document.getElementById("checkoutDiscountRow");
+  const checkoutDiscount = Number(document.getElementById("checkoutDiscount")?.dataset.discount || 0);
+  const checkoutShipping = document.getElementById("checkoutShipping");
+  const checkoutShippingLabel = document.getElementById("checkoutShippingLabel");
+  const checkoutTotal = document.getElementById("checkoutTotal");
+  const confirmButton = document.getElementById("confirmButton");
+
+  function formatCurrency(value) {
+    return "$" + Number(value || 0).toLocaleString("es-CO");
+  }
+
+  function getCityConfig() {
+    const selectedCity = (cityInput.value || "").trim();
+    return (shippingConfig.cities || []).find((city) => city.label === selectedCity) || null;
+  }
+
+  function getShippingState() {
+    const city = getCityConfig();
+
+    if (!city) {
+      return {
+        shippingCost: null,
+        total: Math.max(checkoutSubtotal - checkoutDiscount, 0),
+        shippingLabel: "Selecciona tu ciudad para calcular el envio",
+        shippingText: "Por calcular",
+        buttonText: "Confirmar pedido"
+      };
+    }
+
+    const discountedSubtotal = Math.max(checkoutSubtotal - checkoutDiscount, 0);
+    const shippingCost = city.chargeShipping ? Number(city.cost || 0) : 0;
+
+    if (shippingCost === 0) {
+      return {
+        shippingCost: 0,
+        total: discountedSubtotal,
+        shippingLabel: "Envio gratis a " + city.label,
+        shippingText: "Gratis",
+        buttonText: "Confirmar pedido por " + formatCurrency(discountedSubtotal)
+      };
+    }
+
+    return {
+      shippingCost,
+      total: discountedSubtotal + shippingCost,
+      shippingLabel: "Envio a " + city.label,
+      shippingText: formatCurrency(shippingCost),
+      buttonText: "Confirmar pedido por " + formatCurrency(discountedSubtotal + shippingCost)
+    };
+  }
+
+  function syncContraentregaOption() {
+    const city = getCityConfig();
+    const enabled = city && city.allowCashOnDelivery;
+
+    contra.hidden = !enabled;
+    contra.disabled = !enabled;
+    contra.textContent = city && city.allowCashOnDelivery
+      ? "Contraentrega disponible en " + city.label
+      : "Contraentrega";
+
+    if (!enabled && paymentSelect.value === "contraentrega") {
+      paymentSelect.value = "";
+    }
+  }
+
+  function syncCityPolicyHelp() {
+    const city = getCityConfig();
+
+    if (!city) {
+      cityPolicyHelp.textContent = "Selecciona tu ciudad para ver costo de envio y disponibilidad de contraentrega.";
+      return;
+    }
+
+    const shippingText = city.chargeShipping
+      ? "Envio: " + formatCurrency(city.cost || 0)
+      : "Envio gratis";
+    const paymentText = city.allowCashOnDelivery
+      ? "contraentrega disponible"
+      : "solo transferencia";
+
+    cityPolicyHelp.textContent = shippingText + " | " + paymentText + ".";
+  }
+
+  function syncPaymentHelp() {
+    const shippingState = getShippingState();
+
+    if (paymentSelect.value === "transferencia") {
+      paymentHelp.innerHTML = "Despues de registrar el pedido te compartiremos los datos oficiales para pago por transferencia y validaremos el despacho contigo.";
+      return;
+    }
+
+    if (paymentSelect.value === "contraentrega") {
+      paymentHelp.innerHTML = "Contraentrega esta habilitada para tu ciudad. Verifica que tu direccion este completa para coordinar la entrega con el equipo.";
+      return;
+    }
+
+    const city = getCityConfig();
+    paymentHelp.innerHTML = shippingState.shippingCost === null
+      ? "Selecciona tu ciudad para calcular el costo de envio antes de finalizar."
+      : city && !city.allowCashOnDelivery
+        ? "Para esta ciudad solo esta disponible el pago por transferencia."
+      : "Elige tu metodo de pago para ver recomendaciones antes de finalizar el pedido.";
+  }
+
+  function syncCheckoutTotals() {
+    const shippingState = getShippingState();
+    if (checkoutDiscountRow) {
+      checkoutDiscountRow.classList.toggle("d-none", checkoutDiscount <= 0);
+    }
+    checkoutShipping.textContent = shippingState.shippingText;
+    checkoutShippingLabel.textContent = shippingState.shippingLabel;
+    checkoutTotal.textContent = formatCurrency(shippingState.total);
+    confirmButton.textContent = shippingState.buttonText;
+  }
+
+  cityInput.addEventListener("change", () => {
+    syncContraentregaOption();
+    syncCityPolicyHelp();
+    syncCheckoutTotals();
+    syncPaymentHelp();
+  });
+  paymentSelect.addEventListener("change", syncPaymentHelp);
+
+  syncContraentregaOption();
+  syncCityPolicyHelp();
+  syncCheckoutTotals();
+  syncPaymentHelp();
+</script>

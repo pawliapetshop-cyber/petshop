@@ -1,0 +1,194 @@
+<h2>Productos</h2>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'success' ? 'success' : 'danger' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<a href="/admin/products/create" class="btn btn-success mb-3">+ Crear producto</a>
+
+<div class="bg-white shadow rounded p-3 mb-4">
+  <form method="GET" action="/admin/products" class="row g-3 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label">Buscar</label>
+      <input
+        type="text"
+        name="search"
+        class="form-control"
+        placeholder="Nombre del producto"
+        value="<%= filters?.search || '' %>"
+      >
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Categoria</label>
+      <select name="category" class="form-select">
+        <option value="">Todas</option>
+        <% categories.forEach(category => { %>
+          <option value="<%= category.id %>" <%= String(filters?.category || '') === String(category.id) ? "selected" : "" %>>
+            <%= category.name %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Estado</label>
+      <select name="status" class="form-select">
+        <option value="">Todos</option>
+        <option value="active" <%= filters?.status === "active" ? "selected" : "" %>>Activos</option>
+        <option value="inactive" <%= filters?.status === "inactive" ? "selected" : "" %>>Inactivos</option>
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Inventario</label>
+      <select name="stockFilter" class="form-select">
+        <option value="">Todos</option>
+        <option value="low" <%= filters?.stockFilter === "low" ? "selected" : "" %>>Bajo stock</option>
+        <option value="out" <%= filters?.stockFilter === "out" ? "selected" : "" %>>Sin stock</option>
+        <option value="variant-low" <%= filters?.stockFilter === "variant-low" ? "selected" : "" %>>Variantes en alerta</option>
+        <option value="variant-out" <%= filters?.stockFilter === "variant-out" ? "selected" : "" %>>Variantes agotadas</option>
+      </select>
+    </div>
+
+    <div class="col-md-1">
+      <button class="btn btn-primary" type="submit">OK</button>
+    </div>
+  </form>
+</div>
+
+<table class="table table-bordered bg-white shadow">
+  <thead class="table-dark">
+    <tr>
+      <th>Imagen</th>
+      <th>Nombre</th>
+      <th>Precio</th>
+      <th>Categoria</th>
+      <th>Stock</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% if (products.length === 0) { %>
+      <tr>
+        <td colspan="7" class="text-center text-muted py-4">
+          No se encontraron productos con los filtros actuales.
+        </td>
+      </tr>
+    <% } %>
+
+    <% products.forEach(p => { %>
+      <%
+        const mainImage = p.ProductImages?.[0]?.image || "default.png";
+        const available = p.inventoryMeta?.available ?? ((Number(p.stock) || 0) - (Number(p.reservedStock) || 0));
+        const threshold = p.inventoryMeta?.threshold ?? (Number(p.lowStockThreshold) || 0);
+        const isLow = available <= threshold;
+        const variantCount = p.inventoryMeta?.variantCount || p.ProductVariants?.length || 0;
+        const lowVariants = p.inventoryMeta?.lowVariants || [];
+        const outVariants = p.inventoryMeta?.outVariants || [];
+      %>
+      <tr>
+        <td>
+          <img src="/uploads/<%= mainImage %>" width="60" style="object-fit:cover; border-radius:5px;">
+        </td>
+        <td>
+          <strong><%= p.name %></strong>
+          <% if (variantCount > 0) { %>
+            <div><small class="text-muted"><%= variantCount %> variantes activas</small></div>
+          <% } %>
+          <% if (isLow) { %>
+            <div><small class="text-danger">Bajo stock</small></div>
+          <% } %>
+          <% if (lowVariants.length > 0) { %>
+            <div><small class="text-warning">Alertas en variantes: <%= lowVariants.length %></small></div>
+          <% } %>
+        </td>
+        <td>$<%= p.price %></td>
+        <td><%= p.Category?.name %></td>
+        <td>
+          <strong><%= available %></strong>
+          <div><small class="text-muted">Total: <%= p.stock %> | Reservado: <%= p.reservedStock %></small></div>
+          <div><small class="text-muted">Umbral: <%= p.lowStockThreshold %></small></div>
+          <% if (variantCount > 0) { %>
+            <div class="mt-2">
+              <% lowVariants.slice(0, 2).forEach(variant => { %>
+                <div><small class="text-danger"><%= variant.name %>: <%= variant.available %> disponibles</small></div>
+              <% }) %>
+              <% if (outVariants.length > 0) { %>
+                <div><small class="text-muted">Agotadas: <%= outVariants.length %></small></div>
+              <% } %>
+              <% if (lowVariants.length > 2) { %>
+                <div><small class="text-muted">+<%= lowVariants.length - 2 %> variantes en alerta</small></div>
+              <% } %>
+            </div>
+
+            <div class="mt-3">
+              <details>
+                <summary class="small text-primary" style="cursor:pointer;">
+                  Editar stock por variante
+                </summary>
+                <div class="mt-2">
+                  <% (p.inventoryMeta?.variants || []).forEach(variant => { %>
+                    <form method="POST" action="/admin/variants/<%= variant.id %>/stock" class="border rounded p-2 mb-2 bg-light">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <div class="small fw-semibold"><%= variant.name %></div>
+                      <div class="small text-muted mb-2">
+                        Disponible: <%= variant.available %> | Reservado: <%= variant.reservedStock %>
+                      </div>
+                      <div class="d-flex gap-2 align-items-center">
+                        <input
+                          type="number"
+                          name="stock"
+                          min="<%= variant.reservedStock %>"
+                          step="1"
+                          value="<%= variant.stock %>"
+                          class="form-control form-control-sm"
+                        >
+                        <button class="btn btn-outline-primary btn-sm" type="submit">
+                          Guardar
+                        </button>
+                      </div>
+                    </form>
+                  <% }) %>
+                </div>
+              </details>
+            </div>
+          <% } %>
+        </td>
+        <td>
+          <% if (p.isActive) { %>
+            <span class="badge bg-success">Activo</span>
+          <% } else { %>
+            <span class="badge bg-secondary">Inactivo</span>
+          <% } %>
+        </td>
+        <td>
+          <a href="/admin/products/edit/<%= p.id %>" class="btn btn-warning btn-sm">
+            Editar
+          </a>
+          <form method="POST" action="/admin/products/toggle-status/<%= p.id %>" class="d-inline">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn-outline-secondary btn-sm" type="submit">
+              <%= p.isActive ? "Desactivar" : "Activar" %>
+            </button>
+          </form>
+          <form
+            method="POST"
+            action="/admin/products/delete/<%= p.id %>"
+            class="d-inline"
+            onsubmit="return confirm('Eliminar este producto?')"
+          >
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn-danger btn-sm" type="submit">
+              Eliminar
+            </button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>

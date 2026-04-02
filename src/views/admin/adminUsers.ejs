@@ -1,0 +1,130 @@
+<h2 class="mb-4">Usuarios administradores</h2>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'success' ? 'success' : 'danger' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<% if (errorMessages && errorMessages.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      <% errorMessages.forEach(message => { %>
+        <li><%= message %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<div class="bg-white shadow rounded p-4 mb-4">
+  <h4 class="mb-3">Crear usuario admin</h4>
+
+  <form method="POST" action="/admin/admin-users/create" class="row g-3">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="col-md-4">
+      <label class="form-label">Correo</label>
+      <input type="email" name="email" class="form-control" value="<%= formData?.email || '' %>" required>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Contrasena</label>
+      <input type="password" name="password" class="form-control" required>
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Rol</label>
+      <select name="role" class="form-select">
+        <option value="store_admin" <%= formData?.role === 'store_admin' ? 'selected' : '' %>>Admin de tienda</option>
+        <option value="superadmin" <%= formData?.role === 'superadmin' ? 'selected' : '' %>>Superadmin</option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Tienda</label>
+      <select name="storeId" class="form-select">
+        <option value="">Sin tienda asignada</option>
+        <% stores.forEach(store => { %>
+          <option value="<%= store.id %>" <%= String(formData?.storeId || '') === String(store.id) ? 'selected' : '' %>>
+            <%= store.name %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="col-12">
+      <button class="btn btn-success" type="submit">Crear usuario</button>
+    </div>
+  </form>
+</div>
+
+<div class="bg-white shadow rounded p-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Usuarios actuales</h4>
+    <small class="text-muted"><%= admins.length %> registros</small>
+  </div>
+
+  <% if (admins.length === 0) { %>
+    <p class="text-muted mb-0">Todavia no hay usuarios admin registrados.</p>
+  <% } %>
+
+  <% admins.forEach(admin => { %>
+    <form method="POST" action="/admin/admin-users/<%= admin.id %>/update" class="border rounded p-3 mb-3">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Correo</label>
+          <input type="email" name="email" class="form-control" value="<%= admin.email %>" required>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Nueva contrasena</label>
+          <input type="password" name="password" class="form-control" placeholder="Dejar vacio para mantener">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Rol</label>
+          <select name="role" class="form-select">
+            <option value="store_admin" <%= admin.role === 'store_admin' ? 'selected' : '' %>>Admin de tienda</option>
+            <option value="superadmin" <%= admin.role === 'superadmin' ? 'selected' : '' %>>Superadmin</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Tienda</label>
+          <select name="storeId" class="form-select">
+            <option value="">Sin tienda asignada</option>
+            <% stores.forEach(store => { %>
+              <option value="<%= store.id %>" <%= String(admin.StoreId || '') === String(store.id) ? 'selected' : '' %>>
+                <%= store.name %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <small class="text-muted">
+            Rol actual: <%= admin.role === 'superadmin' ? 'Superadmin' : 'Admin de tienda' %>
+            <% if (admin.Store) { %>
+              | Tienda: <%= admin.Store.name %>
+            <% } %>
+          </small>
+        </div>
+
+        <div class="col-md-6 text-md-end d-flex justify-content-md-end gap-2">
+          <button class="btn btn-primary btn-sm" type="submit">Guardar cambios</button>
+          <button
+            class="btn btn-danger btn-sm"
+            type="submit"
+            formaction="/admin/admin-users/<%= admin.id %>/delete"
+            formmethod="POST"
+            onclick="return confirm('Eliminar este usuario admin?')"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </form>
+  <% }) %>
+</div>

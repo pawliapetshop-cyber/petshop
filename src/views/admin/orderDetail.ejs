@@ -1,0 +1,278 @@
+<h2>Pedido #<%= order.id %></h2>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'success' ? 'success' : 'danger' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<div class="bg-white p-4 shadow rounded mb-4">
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h5 class="mb-1">Datos del cliente</h5>
+      <small class="text-muted">Creado: <%= new Date(order.createdAt).toLocaleString("es-CO") %></small>
+    </div>
+    <div>
+      <% if(order.status === "pendiente"){ %>
+        <span class="badge bg-warning text-dark"><%= statusLabels[order.status] %></span>
+      <% } else if(order.status === "pago_validado"){ %>
+        <span class="badge bg-success-subtle text-success"><%= statusLabels[order.status] %></span>
+      <% } else if(order.status === "aceptado"){ %>
+        <span class="badge bg-success"><%= statusLabels[order.status] %></span>
+      <% } else if(order.status === "preparando"){ %>
+        <span class="badge bg-info text-dark"><%= statusLabels[order.status] %></span>
+      <% } else if(order.status === "enviado"){ %>
+        <span class="badge bg-primary"><%= statusLabels[order.status] %></span>
+      <% } else if(order.status === "entregado"){ %>
+        <span class="badge bg-dark"><%= statusLabels[order.status] %></span>
+      <% } else if(order.status === "rechazado"){ %>
+        <span class="badge bg-danger"><%= statusLabels[order.status] %></span>
+      <% } %>
+    </div>
+  </div>
+
+  <p><strong>Nombre:</strong> <%= order.name %></p>
+  <% if (order.CustomerId) { %>
+    <p><strong>Ficha cliente:</strong> <a href="/admin/customers/<%= order.CustomerId %>">Ver historial del cliente</a></p>
+  <% } %>
+  <p><strong>Documento:</strong> <%= order.document %></p>
+  <p><strong>Telefono:</strong> <%= order.phone %></p>
+  <p><strong>Correo:</strong> <%= order.email || "No registrado" %></p>
+  <p><strong>Ciudad:</strong> <%= order.city %></p>
+  <p><strong>Direccion:</strong> <%= order.address %></p>
+  <p><strong>Pago:</strong> <%= order.paymentMethod %></p>
+  <p><strong>Referencia de pago:</strong> <%= order.paymentReference || "Pendiente" %></p>
+  <p><strong>Comprobante recibido:</strong> <%= order.paymentReceivedAt ? new Date(order.paymentReceivedAt).toLocaleString("es-CO") : "No" %></p>
+  <p><strong>Pago validado:</strong> <%= order.paymentValidatedAt ? new Date(order.paymentValidatedAt).toLocaleString("es-CO") : "No" %></p>
+  <p><strong>Subtotal:</strong> $<%= Number(order.subtotal || 0).toLocaleString("es-CO") %></p>
+  <p><strong>Cupon:</strong> <%= order.couponCode || "No aplicado" %></p>
+  <p><strong>Descuento:</strong> -$<%= Number(order.couponDiscount || 0).toLocaleString("es-CO") %></p>
+  <p><strong>Envio:</strong> $<%= Number(order.shippingCost || 0).toLocaleString("es-CO") %></p>
+  <p><strong>Total:</strong> $<%= Number(order.total || 0).toLocaleString("es-CO") %></p>
+  <p><strong>Aceptado:</strong> <%= order.acceptedAt ? new Date(order.acceptedAt).toLocaleString("es-CO") : "No" %></p>
+  <p><strong>Preparando:</strong> <%= order.preparingAt ? new Date(order.preparingAt).toLocaleString("es-CO") : "No" %></p>
+  <p><strong>Enviado:</strong> <%= order.shippedAt ? new Date(order.shippedAt).toLocaleString("es-CO") : "No" %></p>
+  <p><strong>Entregado:</strong> <%= order.deliveredAt ? new Date(order.deliveredAt).toLocaleString("es-CO") : "No" %></p>
+  <p><strong>Rechazado:</strong> <%= order.rejectedAt ? new Date(order.rejectedAt).toLocaleString("es-CO") : "No" %></p>
+</div>
+
+<div class="bg-white p-4 shadow rounded mb-4">
+  <h5>Comprobante de pago</h5>
+
+  <form
+    method="POST"
+    action="/admin/orders/<%= order.id %>/payment-proof?_csrf=<%= csrfToken %>"
+    enctype="multipart/form-data"
+  >
+    <div class="mb-3">
+      <label class="form-label">Referencia o nota de pago</label>
+      <input
+        type="text"
+        name="paymentReference"
+        class="form-control"
+        placeholder="Ej: Nequi 839201 / Transferencia Bancolombia"
+        value="<%= order.paymentReference || '' %>"
+      >
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Observacion interna</label>
+      <textarea
+        name="paymentNote"
+        class="form-control"
+        rows="3"
+        placeholder="Ej: comprobante enviado por WhatsApp y validado con el cliente"
+      ></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Adjuntar comprobante</label>
+      <input type="file" name="paymentProof" class="form-control" accept=".jpg,.jpeg,.png,.pdf,.webp">
+      <div class="form-text">Puedes registrar solo la referencia o adjuntar el archivo recibido por WhatsApp.</div>
+    </div>
+
+    <button type="submit" class="btn btn-outline-success">
+      Guardar comprobante
+    </button>
+  </form>
+
+  <% if (order.paymentProofImage) { %>
+    <div class="mt-4">
+      <div class="fw-semibold mb-2">Archivo actual</div>
+      <a href="/uploads/<%= order.paymentProofImage %>" target="_blank" class="btn btn-sm btn-dark">
+        Ver comprobante adjunto
+      </a>
+      <% if (!order.paymentProofImage.toLowerCase().endsWith('.pdf')) { %>
+        <div class="mt-3">
+          <img
+            src="/uploads/<%= order.paymentProofImage %>"
+            alt="Comprobante de pago"
+            style="max-width: 280px; border-radius: 10px; border: 1px solid #ddd;"
+          >
+        </div>
+      <% } %>
+    </div>
+  <% } %>
+</div>
+
+<div class="bg-white p-4 shadow rounded mb-4">
+  <h5>Productos</h5>
+
+  <% let total = 0; %>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Precio</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% order.OrderItems.forEach(item => { total += item.quantity * item.price; %>
+        <tr>
+          <td>
+            <strong><%= item.productName || item.Product?.name || "Producto" %></strong>
+            <% if (item.variantName) { %>
+              <div><small class="text-muted">Variante: <%= item.variantName %></small></div>
+            <% } %>
+            <% if (item.productImage) { %>
+              <div class="mt-2">
+                <img
+                  src="/uploads/<%= item.productImage %>"
+                  alt="<%= item.productName || item.Product?.name || 'Producto' %>"
+                  width="72"
+                  style="border-radius:8px; object-fit:cover;"
+                >
+              </div>
+            <% } %>
+          </td>
+          <td><%= item.quantity %></td>
+          <td>$<%= item.price %></td>
+          <td>$<%= item.quantity * item.price %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <div class="text-end">
+    <div><strong>Subtotal productos:</strong> $<%= Number(total).toLocaleString("es-CO") %></div>
+    <div><strong>Descuento cupon:</strong> -$<%= Number(order.couponDiscount || 0).toLocaleString("es-CO") %></div>
+    <div><strong>Envio:</strong> $<%= Number(order.shippingCost || 0).toLocaleString("es-CO") %></div>
+    <h4>Total: $<%= Number(order.total ?? total).toLocaleString("es-CO") %></h4>
+  </div>
+</div>
+
+<div class="bg-white p-4 shadow rounded mb-4">
+  <h5>Acciones del pedido</h5>
+
+  <% if(order.status === "pendiente"){ %>
+    <div class="d-flex gap-2 flex-wrap">
+      <% if (order.paymentMethod === "transferencia") { %>
+        <form method="POST" action="/admin/orders/<%= order.id %>/validate-payment" class="d-inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-outline-success">
+            Validar pago
+          </button>
+        </form>
+      <% } %>
+
+      <form method="POST" action="/admin/orders/accept/<%= order.id %>" class="d-inline">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-success">
+          Aceptar
+        </button>
+      </form>
+
+      <form
+        method="POST"
+        action="/admin/orders/reject/<%= order.id %>"
+        class="d-inline"
+        onsubmit="return confirm('Rechazar pedido?')"
+      >
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-danger">
+          Rechazar
+        </button>
+      </form>
+    </div>
+  <% } %>
+
+  <% if(order.status === "pago_validado"){ %>
+    <div class="d-flex gap-2 flex-wrap">
+      <form method="POST" action="/admin/orders/accept/<%= order.id %>" class="d-inline">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-success">
+          Aceptar pedido
+        </button>
+      </form>
+    </div>
+  <% } %>
+
+  <% if(availableTransitions && availableTransitions.length > 0){ %>
+    <form method="POST" action="/admin/orders/<%= order.id %>/status" class="mt-3 d-flex gap-2 align-items-center">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <select name="nextStatus" class="form-select" style="max-width: 240px;">
+        <% availableTransitions.forEach(status => { %>
+          <option value="<%= status %>"><%= statusLabels[status] %></option>
+        <% }) %>
+      </select>
+      <button type="submit" class="btn btn-outline-primary">
+        Actualizar estado
+      </button>
+    </form>
+  <% } %>
+</div>
+
+<div class="bg-white p-4 shadow rounded mb-4">
+  <h5>Notas internas</h5>
+  <form method="POST" action="/admin/orders/<%= order.id %>/notes">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <textarea
+      name="internalNotes"
+      class="form-control mb-3"
+      rows="5"
+      placeholder="Escribe observaciones internas del pedido..."
+    ><%= order.internalNotes || "" %></textarea>
+    <button type="submit" class="btn btn-outline-primary">
+      Guardar notas
+    </button>
+  </form>
+</div>
+
+<div class="bg-white p-4 shadow rounded mb-4">
+  <h5>Historial del pedido</h5>
+
+  <% if (order.statusHistory && order.statusHistory.length > 0) { %>
+    <ul class="list-group">
+      <% order.statusHistory.slice().reverse().forEach(entry => { %>
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between">
+            <strong>
+              <%= entry.type === "payment_proof"
+                ? "Comprobante recibido"
+                : (statusLabels[entry.status] || entry.status || "Actualizacion") %>
+            </strong>
+            <small class="text-muted"><%= new Date(entry.createdAt).toLocaleString("es-CO") %></small>
+          </div>
+          <% if (entry.note) { %>
+            <div><%= entry.note %></div>
+          <% } %>
+          <small class="text-muted">Actor: <%= entry.actor || "sistema" %></small>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p class="text-muted mb-0">Sin historial registrado.</p>
+  <% } %>
+</div>
+
+<div class="mb-4">
+  <% if(order.pdf){ %>
+    <a href="/pdfs/<%= order.pdf %>" target="_blank" class="btn btn-dark">
+      Ver PDF
+    </a>
+  <% } %>
+</div>

@@ -1,0 +1,206 @@
+<h2>Crear Producto</h2>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'success' ? 'success' : 'danger' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<% if (errorMessages && errorMessages.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      <% errorMessages.forEach(message => { %>
+        <li><%= message %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form
+  method="POST"
+  action="/admin/products/create?_csrf=<%= csrfToken %>"
+  enctype="multipart/form-data"
+  class="bg-white p-4 shadow rounded"
+>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="mb-3">
+    <input
+      name="name"
+      class="form-control"
+      placeholder="Nombre del producto"
+      value="<%= formData?.name || '' %>"
+      required
+    >
+  </div>
+
+  <div class="mb-3">
+    <label>Descripcion corta</label>
+    <textarea
+      name="description"
+      class="form-control"
+      placeholder="Descripcion breve"
+      required
+    ><%= formData?.description || '' %></textarea>
+  </div>
+
+  <div class="mb-3">
+    <label>Descripcion detallada / especificaciones</label>
+    <textarea
+      name="longDescription"
+      class="form-control"
+      rows="6"
+      placeholder="Ej: materiales, medidas, uso, recomendaciones..."
+    ><%= formData?.longDescription || '' %></textarea>
+  </div>
+
+  <div class="mb-3">
+    <input
+      name="price"
+      type="number"
+      min="0"
+      step="0.01"
+      class="form-control"
+      placeholder="Precio"
+      value="<%= formData?.price ?? '' %>"
+      required
+    >
+  </div>
+
+  <div class="mb-3">
+    <label>Stock base</label>
+    <input
+      name="stock"
+      type="number"
+      min="0"
+      step="1"
+      class="form-control"
+      placeholder="Stock"
+      value="<%= formData?.stock ?? '' %>"
+      required
+    >
+    <div class="form-text">
+      Si agregas variantes, este stock se reemplaza automaticamente por la suma de sus existencias.
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <input
+      name="lowStockThreshold"
+      type="number"
+      min="0"
+      step="1"
+      class="form-control"
+      placeholder="Umbral de bajo stock"
+      value="<%= formData?.lowStockThreshold ?? 0 %>"
+      required
+    >
+  </div>
+
+  <div class="form-check form-switch mb-3">
+    <input
+      class="form-check-input"
+      type="checkbox"
+      id="isActive"
+      name="isActive"
+      <%= formData?.isActive !== false ? "checked" : "" %>
+    >
+    <label class="form-check-label" for="isActive">Producto activo en tienda</label>
+  </div>
+
+  <div class="mb-3">
+    <input type="file" name="images" multiple class="form-control">
+  </div>
+
+  <div class="mb-3">
+    <select name="categoryId" class="form-control" required>
+      <option value="">Selecciona una categoria</option>
+      <% categories.forEach(c => { %>
+        <option
+          value="<%= c.id %>"
+          <%= String(formData?.categoryId || '') === String(c.id) ? "selected" : "" %>
+        >
+          <%= c.name %>
+        </option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <label class="mb-0">Variantes</label>
+      <button type="button" class="btn btn-outline-primary btn-sm" onclick="addVariantRow()">
+        Agregar variante
+      </button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Nombre</th>
+            <th style="width: 150px;">Stock</th>
+            <th style="width: 180px;">Precio opcional</th>
+            <th style="width: 80px;"></th>
+          </tr>
+        </thead>
+        <tbody id="variantRows">
+          <% if (formData?.variants && formData.variants.length > 0) { %>
+            <% formData.variants.forEach(variant => { %>
+              <tr>
+                <td>
+                  <input type="hidden" name="variantId" value="<%= variant.id || '' %>">
+                  <input type="text" name="variantName" class="form-control" value="<%= variant.name || '' %>" placeholder="Ej: 2 kg / Pollo / Azul">
+                </td>
+                <td>
+                  <input type="number" name="variantStock" min="0" step="1" class="form-control" value="<%= variant.stock ?? '' %>">
+                </td>
+                <td>
+                  <input type="number" name="variantPrice" min="0" step="0.01" class="form-control" value="<%= variant.price ?? '' %>" placeholder="Usa el precio base si lo dejas vacio">
+                </td>
+                <td class="text-center">
+                  <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeVariantRow(this)">X</button>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="form-text">
+      Usa variantes cuando un producto cambie por presentacion, sabor, talla o color y necesite stock independiente.
+    </div>
+  </div>
+
+  <button class="btn btn-success w-100">Guardar Producto</button>
+</form>
+
+<template id="variantRowTemplate">
+  <tr>
+    <td>
+      <input type="hidden" name="variantId" value="">
+      <input type="text" name="variantName" class="form-control" placeholder="Ej: 2 kg / Pollo / Azul">
+    </td>
+    <td>
+      <input type="number" name="variantStock" min="0" step="1" class="form-control" value="0">
+    </td>
+    <td>
+      <input type="number" name="variantPrice" min="0" step="0.01" class="form-control" placeholder="Usa el precio base si lo dejas vacio">
+    </td>
+    <td class="text-center">
+      <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeVariantRow(this)">X</button>
+    </td>
+  </tr>
+</template>
+
+<script>
+  function addVariantRow() {
+    const template = document.getElementById("variantRowTemplate");
+    const container = document.getElementById("variantRows");
+    container.appendChild(template.content.cloneNode(true));
+  }
+
+  function removeVariantRow(button) {
+    button.closest("tr").remove();
+  }
+</script>

@@ -1,0 +1,16 @@
+2026-03-28T01:33:01.122Z express:application set "x-powered-by" to true
+2026-03-28T01:33:01.124Z express:application set "etag" to 'weak'
+2026-03-28T01:33:01.125Z express:application set "etag fn" to [Function: generateETag]
+2026-03-28T01:33:01.126Z express:application set "env" to 'development'
+2026-03-28T01:33:01.127Z express:application set "query parser" to 'simple'
+2026-03-28T01:33:01.130Z express:application set "query parser fn" to [Function: parse]
+2026-03-28T01:33:01.131Z express:application set "subdomain offset" to 2
+2026-03-28T01:33:01.133Z express:application set "trust proxy" to false
+2026-03-28T01:33:01.133Z express:application set "trust proxy fn" to [Function: trustNone]
+2026-03-28T01:33:01.133Z express:application booting in development mode
+2026-03-28T01:33:01.133Z express:application set "view" to [Function: View]
+2026-03-28T01:33:01.134Z express:application set "views" to 'C:\\Users\\user\\Documents\\Proyectos\\petshop\\views'
+2026-03-28T01:33:01.134Z express:application set "jsonp callback name" to 'callback'
+2026-03-28T01:33:01.135Z express:application set "layout" to 'layout'
+2026-03-28T01:33:01.135Z express:application set "view engine" to 'ejs'
+2026-03-28T01:33:01.135Z express:application set "views" to 'C:\\Users\\user\\Documents\\Proyectos\\petshop\\src\\views'

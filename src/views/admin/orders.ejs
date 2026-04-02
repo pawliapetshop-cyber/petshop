@@ -1,0 +1,216 @@
+<h2>Pedidos</h2>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'success' ? 'success' : 'danger' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<div class="row mb-4">
+  <div class="col-md-2 mb-3">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <small class="text-muted">Total</small>
+        <h4 class="mb-0"><%= summary.total %></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2 mb-3">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <small class="text-muted">Pendientes</small>
+        <h4 class="mb-0 text-warning"><%= summary.pendiente %></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2 mb-3">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <small class="text-muted">Aceptados</small>
+        <h4 class="mb-0 text-success"><%= summary.aceptado %></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2 mb-3">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <small class="text-muted">Pago validado</small>
+        <h4 class="mb-0 text-success"><%= summary.pago_validado %></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2 mb-3">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <small class="text-muted">Preparando</small>
+        <h4 class="mb-0 text-info"><%= summary.preparando %></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2 mb-3">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <small class="text-muted">Enviados</small>
+        <h4 class="mb-0 text-primary"><%= summary.enviado %></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2 mb-3">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <small class="text-muted">Entregados</small>
+        <h4 class="mb-0 text-dark"><%= summary.entregado %></h4>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bg-white shadow rounded p-3 mb-4">
+  <form method="GET" action="/admin/orders" class="row g-3 align-items-end">
+    <div class="col-md-5">
+      <label class="form-label">Buscar</label>
+      <input
+        type="text"
+        name="search"
+        class="form-control"
+        placeholder="Nombre, telefono o documento"
+        value="<%= filters?.search || '' %>"
+      >
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Estado</label>
+      <select name="status" class="form-select">
+        <option value="">Todos</option>
+        <% Object.keys(statusLabels).forEach(statusKey => { %>
+          <option
+            value="<%= statusKey %>"
+            <%= filters?.status === statusKey ? "selected" : "" %>
+          >
+            <%= statusLabels[statusKey] %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Desde</label>
+      <input
+        type="date"
+        name="dateFrom"
+        class="form-control"
+        value="<%= filters?.dateFrom || '' %>"
+      >
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Hasta</label>
+      <input
+        type="date"
+        name="dateTo"
+        class="form-control"
+        value="<%= filters?.dateTo || '' %>"
+      >
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Ordenar</label>
+      <select name="sort" class="form-select">
+        <option value="newest" <%= filters?.sort === "newest" ? "selected" : "" %>>Mas nuevos</option>
+        <option value="oldest" <%= filters?.sort === "oldest" ? "selected" : "" %>>Mas antiguos</option>
+        <option value="status" <%= filters?.sort === "status" ? "selected" : "" %>>Por estado</option>
+      </select>
+    </div>
+
+    <div class="col-md-4 d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Filtrar</button>
+      <a href="/admin/orders" class="btn btn-outline-secondary">Limpiar</a>
+    </div>
+  </form>
+</div>
+
+<table class="table table-bordered bg-white shadow">
+  <thead class="table-dark">
+    <tr>
+      <th>ID</th>
+      <th>Cliente</th>
+      <th>Ciudad</th>
+      <th>Pago</th>
+      <th>Comprobante</th>
+      <th>Estado</th>
+      <th>Fecha</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% if (orders.length === 0) { %>
+      <tr>
+        <td colspan="8" class="text-center text-muted py-4">
+          No se encontraron pedidos con los filtros actuales.
+        </td>
+      </tr>
+    <% } %>
+
+    <% orders.forEach(order => { %>
+      <tr>
+        <td>#<%= order.id %></td>
+
+        <td>
+          <strong>
+            <% if (order.CustomerId) { %>
+              <a href="/admin/customers/<%= order.CustomerId %>"><%= order.name %></a>
+            <% } else { %>
+              <%= order.name %>
+            <% } %>
+          </strong><br>
+          <small><%= order.phone %></small>
+        </td>
+
+        <td><%= order.city %></td>
+        <td><%= order.paymentMethod %></td>
+        <td>
+          <% if (order.paymentReceivedAt) { %>
+            <span class="badge bg-success">Recibido</span>
+          <% } else { %>
+            <span class="badge bg-secondary">Pendiente</span>
+          <% } %>
+        </td>
+
+        <td>
+          <% if(order.status === "pendiente"){ %>
+            <span class="badge bg-warning text-dark"><%= statusLabels[order.status] %></span>
+          <% } else if(order.status === "pago_validado"){ %>
+            <span class="badge bg-success-subtle text-success"><%= statusLabels[order.status] %></span>
+          <% } else if(order.status === "aceptado"){ %>
+            <span class="badge bg-success"><%= statusLabels[order.status] %></span>
+          <% } else if(order.status === "preparando"){ %>
+            <span class="badge bg-info text-dark"><%= statusLabels[order.status] %></span>
+          <% } else if(order.status === "enviado"){ %>
+            <span class="badge bg-primary"><%= statusLabels[order.status] %></span>
+          <% } else if(order.status === "entregado"){ %>
+            <span class="badge bg-dark"><%= statusLabels[order.status] %></span>
+          <% } else if(order.status === "rechazado"){ %>
+            <span class="badge bg-danger"><%= statusLabels[order.status] %></span>
+          <% } %>
+        </td>
+
+        <td>
+          <small><%= new Date(order.createdAt).toLocaleString("es-CO") %></small>
+        </td>
+
+        <td>
+          <a href="/admin/orders/<%= order.id %>" class="btn btn-primary btn-sm">
+            Ver
+          </a>
+
+          <% if(order.pdf){ %>
+            <a href="/pdfs/<%= order.pdf %>" target="_blank" class="btn btn-dark btn-sm">
+              PDF
+            </a>
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>

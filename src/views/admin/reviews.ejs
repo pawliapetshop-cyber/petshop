@@ -1,0 +1,95 @@
+<h2 class="mb-4">Resenas y calificaciones</h2>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'success' ? 'success' : 'danger' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<div class="bg-white shadow rounded p-3 mb-4">
+  <form method="GET" action="/admin/reviews" class="row g-3 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Estado</label>
+      <select name="status" class="form-select">
+        <option value="">Todos</option>
+        <option value="pending" <%= filters?.status === 'pending' ? 'selected' : '' %>>Pendientes</option>
+        <option value="approved" <%= filters?.status === 'approved' ? 'selected' : '' %>>Aprobadas</option>
+        <option value="rejected" <%= filters?.status === 'rejected' ? 'selected' : '' %>>Rechazadas</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-primary">Filtrar</button>
+      <a href="/admin/reviews" class="btn btn-outline-secondary">Limpiar</a>
+    </div>
+  </form>
+</div>
+
+<div class="bg-white shadow rounded p-4">
+  <% if (reviews.length === 0) { %>
+    <p class="text-muted mb-0">No hay resenas para los filtros actuales.</p>
+  <% } %>
+
+  <% reviews.forEach(review => { %>
+    <div class="border rounded p-3 mb-3">
+      <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+        <div>
+          <div class="fw-semibold"><%= review.customerName %></div>
+          <div class="small text-muted"><%= review.customerEmail %></div>
+          <div class="small text-muted">
+            Producto:
+            <a href="/admin/products/edit/<%= review.ProductId %>"><%= review.Product?.name || 'Producto' %></a>
+          </div>
+          <% if (review.OrderId) { %>
+            <div class="small text-muted">Pedido verificado #<%= review.OrderId %></div>
+          <% } %>
+        </div>
+
+        <div class="text-end">
+          <div class="text-warning fw-semibold mb-1"><%= Number(review.rating).toFixed(1) %> / 5</div>
+          <span class="badge <%= review.status === 'approved' ? 'bg-success' : review.status === 'rejected' ? 'bg-danger' : 'bg-warning text-dark' %>">
+            <%= statusLabels[review.status] %>
+          </span>
+          <div><small class="text-muted"><%= new Date(review.createdAt).toLocaleString('es-CO') %></small></div>
+        </div>
+      </div>
+
+      <p class="mb-3"><%= review.comment %></p>
+
+      <% if (review.ReviewImages && review.ReviewImages.length > 0) { %>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <% review.ReviewImages.forEach(image => { %>
+            <img
+              src="/uploads/<%= image.image %>"
+              alt="Resena de <%= review.customerName %>"
+              style="width:88px; height:88px; object-fit:cover; border-radius:12px;"
+            >
+          <% }) %>
+        </div>
+      <% } %>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <form method="POST" action="/admin/reviews/<%= review.id %>/approve">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <label class="form-label">Nota interna</label>
+            <textarea name="adminNotes" rows="3" class="form-control" placeholder="Observacion interna opcional"><%= review.adminNotes || '' %></textarea>
+            <button type="submit" class="btn btn-success btn-sm mt-2">
+              Aprobar
+            </button>
+          </form>
+        </div>
+
+        <div class="col-md-6">
+          <form method="POST" action="/admin/reviews/<%= review.id %>/reject">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <label class="form-label">Motivo interno de rechazo</label>
+            <textarea name="adminNotes" rows="3" class="form-control" placeholder="Ej. foto no cumple politicas"><%= review.adminNotes || '' %></textarea>
+            <button type="submit" class="btn btn-outline-danger btn-sm mt-2">
+              Rechazar
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+</div>

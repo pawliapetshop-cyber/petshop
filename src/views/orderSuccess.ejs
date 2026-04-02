@@ -1,0 +1,46 @@
+<div class="container mt-5 text-center">
+  <div class="bg-white p-5 shadow rounded">
+    <h2 class="text-success"><%= title || "Pedido recibido" %></h2>
+
+    <p class="mt-3">
+      <%= message || "Tu pedido ha sido registrado correctamente." %>
+    </p>
+
+    <% if (orderId) { %>
+      <p>
+        Numero de pedido:
+        <strong>#<%= orderId %></strong>
+      </p>
+
+      <% if (typeof total !== "undefined") { %>
+        <p>
+          Total estimado:
+          <strong>$<%= Number(total).toLocaleString("es-CO") %></strong>
+        </p>
+      <% } %>
+
+      <% if (Number(couponDiscount || 0) > 0) { %>
+        <p>
+          Cupon aplicado:
+          <strong><%= couponCode %></strong>
+          (-$<%= Number(couponDiscount).toLocaleString("es-CO") %>)
+        </p>
+      <% } %>
+
+      <p class="text-muted">
+        Te contactaremos por WhatsApp para confirmar el pago o envio.
+      </p>
+
+      <div class="border rounded p-3 bg-light text-start mx-auto mt-4" style="max-width: 520px;">
+        <div class="fw-semibold mb-2">Siguientes pasos</div>
+        <div class="small text-muted">1. Revisamos tu pedido y reservamos inventario.</div>
+        <div class="small text-muted">2. Te escribimos para confirmar pago o entrega.</div>
+        <div class="small text-muted">3. Actualizamos el estado del pedido desde nuestro panel interno.</div>
+      </div>
+    <% } %>
+
+    <a href="<%= buttonHref || '/tienda' %>" class="btn btn-success mt-3">
+      <%= buttonLabel || "Seguir comprando" %>
+    </a>
+  </div>
+</div>

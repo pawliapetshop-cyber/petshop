@@ -1,0 +1,441 @@
+<style>
+  .product-container {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+  }
+
+  .main-image {
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+
+  .thumbnail {
+    width: 70px;
+    cursor: pointer;
+    border-radius: 5px;
+    border: 2px solid transparent;
+  }
+
+  .thumbnail:hover {
+    border: 2px solid #198754;
+  }
+
+  .review-image-thumb {
+    width: 88px;
+    height: 88px;
+    object-fit: cover;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.18s ease;
+  }
+
+  .review-image-thumb:hover {
+    transform: scale(1.03);
+  }
+
+  .review-image-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.76);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 1050;
+  }
+
+  .review-image-modal.is-open {
+    display: flex;
+  }
+
+  .review-image-modal__dialog {
+    position: relative;
+    max-width: min(920px, 100%);
+    max-height: 90vh;
+  }
+
+  .review-image-modal__image {
+    max-width: 100%;
+    max-height: 82vh;
+    border-radius: 16px;
+    display: block;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  }
+
+  .review-image-modal__close {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    border: 0;
+    background: #fff;
+    color: #111;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  }
+</style>
+
+<div class="container mt-5">
+  <% if (errorMessage) { %>
+    <div class="alert alert-danger"><%= errorMessage %></div>
+  <% } %>
+
+  <% if (successMessage) { %>
+    <div class="alert alert-success"><%= successMessage %></div>
+  <% } %>
+
+  <%
+    const available = Number(product.inventorySummary?.available) || 0;
+    const variants = product.inventorySummary?.variants || [];
+    const hasVariants = Boolean(product.inventorySummary?.hasVariants);
+  %>
+
+  <div class="row product-container shadow mb-4">
+    <div class="col-md-6 text-center">
+      <%
+        const images = product.ProductImages || [];
+        const main = images.find(i => i.isMain) || images[0];
+      %>
+
+      <% if (main) { %>
+        <img
+          id="mainImage"
+          src="/uploads/<%= main.image %>"
+          class="img-fluid main-image mb-3"
+          alt="<%= product.name %>"
+        >
+      <% } %>
+
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <% images.forEach(img => { %>
+          <img
+            src="/uploads/<%= img.image %>"
+            class="thumbnail"
+            alt="<%= product.name %>"
+            onclick="changeImage(this)"
+          >
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+        <div>
+          <small class="text-uppercase text-muted"><%= product.Category?.name %></small>
+          <h3 class="mt-1"><%= product.name %></h3>
+        </div>
+        <a href="<%= storeBasePath %>" class="btn btn-outline-secondary btn-sm">Volver</a>
+      </div>
+
+      <h2 class="text-success">
+        <% if (product.pricingSummary?.hasPriceRange) { %>
+          Desde $<%= Number(product.pricingSummary.effectiveMinPrice).toLocaleString() %>
+        <% } else { %>
+          $<%= Number(product.price).toLocaleString() %>
+        <% } %>
+      </h2>
+
+      <% if (product.pricingSummary?.hasPriceRange) { %>
+        <p class="text-muted mb-2">
+          Rango hasta $<%= Number(product.pricingSummary.effectiveMaxPrice).toLocaleString() %> segun la variante.
+        </p>
+      <% } %>
+
+      <p class="mt-3"><%= product.description %></p>
+
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="text-warning fs-5">★</span>
+        <strong><%= product.reviewSummary?.averageLabel || "0.0" %></strong>
+        <small class="text-muted">(<%= product.reviewSummary?.count || 0 %> resenas aprobadas)</small>
+      </div>
+
+      <p>
+        <strong>Disponibilidad:</strong>
+        <% if (available > 0) { %>
+          <span class="text-success"><%= available %> disponibles</span>
+        <% } else { %>
+          <span class="text-danger">Sin stock</span>
+        <% } %>
+      </p>
+
+      <% if (hasVariants) { %>
+        <p class="text-muted small">
+          Este producto se vende por opciones. Elige la presentacion adecuada antes de agregarlo al carrito.
+        </p>
+      <% } %>
+
+      <% if (available > 0) { %>
+        <form method="POST" action="<%= `${storeBasePath}/cart/add` %>">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="productId" value="<%= product.id %>">
+
+          <% if (hasVariants) { %>
+            <div class="mb-3">
+              <label class="form-label"><strong>Variante</strong></label>
+              <select name="variantId" class="form-select" required>
+                <option value="">Selecciona una opcion</option>
+                <% variants.forEach(variant => { %>
+                  <option
+                    value="<%= variant.id %>"
+                    <%= String(selectedVariantId || "") === String(variant.id) ? "selected" : "" %>
+                    <%= variant.available <= 0 ? "disabled" : "" %>
+                  >
+                    <%= variant.name %>
+                    <% if (variant.price !== null && variant.price !== undefined) { %>
+                      - $<%= Number(variant.price).toLocaleString() %>
+                    <% } %>
+                    - <%= variant.available > 0 ? `${variant.available} disponibles` : "Sin stock" %>
+                  </option>
+                <% }) %>
+              </select>
+              <div class="form-text">
+                El precio y la disponibilidad cambian segun la opcion seleccionada.
+              </div>
+            </div>
+          <% } %>
+
+          <button class="btn btn-success w-100">
+            <%= hasVariants ? "Agregar variante al carrito" : "Agregar al carrito" %>
+          </button>
+        </form>
+      <% } else { %>
+        <button class="btn btn-secondary w-100" disabled>
+          Sin stock
+        </button>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="bg-white p-4 shadow mb-4 rounded">
+    <h4>Descripcion del producto</h4>
+    <hr>
+
+    <p style="white-space: pre-line;">
+      <%= product.longDescription || "Sin informacion adicional" %>
+    </p>
+  </div>
+
+  <div class="bg-white p-4 shadow mb-4 rounded">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h4 class="mb-0">Resenas y calificaciones</h4>
+        <small class="text-muted">Solo compradores verificados pueden calificar este producto.</small>
+      </div>
+      <div class="text-end">
+        <div class="fw-semibold"><%= product.reviewSummary?.averageLabel || "0.0" %> / 5</div>
+        <small class="text-muted"><%= product.reviewSummary?.count || 0 %> aprobadas</small>
+      </div>
+    </div>
+
+    <% if (product.Reviews && product.Reviews.length > 0) { %>
+      <div class="row g-3 mb-4">
+        <% product.Reviews.forEach(review => { %>
+          <div class="col-12">
+            <div class="border rounded p-3">
+              <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                <div>
+                  <strong><%= review.customerName %></strong>
+                  <div class="text-warning">
+                    <%= "★".repeat(Math.round(Number(review.rating) || 0)) %>
+                    <span class="text-dark ms-1"><%= Number(review.rating).toFixed(1) %></span>
+                  </div>
+                </div>
+                <small class="text-muted"><%= new Date(review.createdAt).toLocaleDateString("es-CO") %></small>
+              </div>
+
+              <p class="mb-2"><%= review.comment %></p>
+
+              <% if (review.ReviewImages && review.ReviewImages.length > 0) { %>
+                <div class="d-flex flex-wrap gap-2">
+                  <% review.ReviewImages.forEach(image => { %>
+                    <img
+                      src="/uploads/<%= image.image %>"
+                      alt="Resena de <%= review.customerName %>"
+                      class="review-image-thumb"
+                      onclick="openReviewImageModal(this.src, this.alt)"
+                    >
+                  <% }) %>
+                </div>
+                <small class="text-muted d-block mt-2">Haz clic en una foto para verla en grande.</small>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p class="text-muted">Todavia no hay resenas aprobadas para este producto.</p>
+    <% } %>
+
+    <% if (reviewErrors && reviewErrors.length > 0) { %>
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          <% reviewErrors.forEach(message => { %>
+            <li><%= message %></li>
+          <% }) %>
+        </ul>
+      </div>
+    <% } %>
+
+    <form method="POST" action="<%= `${storeBasePath}/producto/${product.id}/reviews?_csrf=${csrfToken}` %>" enctype="multipart/form-data" class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Nombre</label>
+        <input type="text" name="customerName" class="form-control" value="<%= reviewFormData?.customerName || '' %>" required>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Correo de compra</label>
+        <input type="email" name="customerEmail" class="form-control" value="<%= reviewFormData?.customerEmail || '' %>" required>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Calificacion</label>
+        <input type="number" name="rating" min="0.5" max="5" step="0.5" class="form-control" value="<%= reviewFormData?.rating || '' %>" required>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Comentario</label>
+        <textarea name="comment" rows="4" class="form-control" required><%= reviewFormData?.comment || '' %></textarea>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Fotos opcionales</label>
+        <input type="file" name="reviewImages" class="form-control" accept="image/*" multiple>
+        <div class="form-text">Puedes subir hasta 3 fotos. La resena quedara pendiente de aprobacion antes de publicarse.</div>
+      </div>
+
+      <div class="col-12">
+        <button class="btn btn-success" type="submit">Enviar resena</button>
+      </div>
+    </form>
+  </div>
+
+  <% if (hasVariants) { %>
+    <div class="bg-white p-4 shadow mb-4 rounded">
+      <h4>Opciones disponibles</h4>
+      <hr>
+
+      <div class="row g-3">
+        <% variants.forEach(variant => { %>
+          <div class="col-md-4">
+            <div class="border rounded p-3 h-100">
+              <strong><%= variant.name %></strong>
+              <div class="text-success mt-2">
+                $<%= Number(variant.price ?? product.price).toLocaleString() %>
+              </div>
+              <small class="<%= variant.available > 0 ? 'text-muted' : 'text-danger' %>">
+                <%= variant.available > 0 ? `${variant.available} disponibles` : "Sin stock" %>
+              </small>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="bg-white p-4 shadow rounded">
+    <h4>Productos relacionados</h4>
+    <hr>
+
+    <div class="row">
+      <% relatedProducts.forEach(r => { %>
+        <div class="col-md-3 mb-3">
+          <%
+            const img = r.ProductImages?.find(i => i.isMain) || r.ProductImages?.[0];
+            const availableR = Number(r.inventorySummary?.available) || 0;
+          %>
+
+          <div class="card h-100 position-relative">
+            <% if (availableR <= 0) { %>
+              <span style="position:absolute; top:10px; left:10px; background:red; color:white; padding:3px 8px; font-size:12px; border-radius:5px; z-index:10;">
+                Sin stock
+              </span>
+            <% } %>
+
+            <% if (img) { %>
+              <img
+                src="/uploads/<%= img.image %>"
+                class="card-img-top"
+                style="height:150px; object-fit:cover; opacity:<%= availableR <= 0 ? 0.5 : 1 %>;"
+                alt="<%= r.name %>"
+              >
+            <% } %>
+
+            <div class="card-body text-center">
+              <small><%= r.name %></small>
+              <h6 class="text-success mt-2">
+                <% if (r.pricingSummary?.hasPriceRange) { %>
+                  Desde $<%= Number(r.pricingSummary.effectiveMinPrice).toLocaleString() %>
+                <% } else { %>
+                  $<%= Number(r.price).toLocaleString() %>
+                <% } %>
+              </h6>
+
+              <% if (availableR > 0) { %>
+                <a href="<%= `${storeBasePath}/producto/${r.id}` %>" class="btn btn-sm btn-success w-100">
+                  Ver producto
+                </a>
+              <% } else { %>
+                <button class="btn btn-sm btn-secondary w-100" disabled>
+                  Sin stock
+                </button>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
+
+<div id="reviewImageModal" class="review-image-modal" onclick="handleReviewModalBackdrop(event)">
+  <div class="review-image-modal__dialog">
+    <button type="button" class="review-image-modal__close" onclick="closeReviewImageModal()" aria-label="Cerrar imagen">
+      &times;
+    </button>
+    <img id="reviewImageModalImg" src="" alt="" class="review-image-modal__image">
+  </div>
+</div>
+
+<script>
+  function changeImage(el) {
+    const mainImage = document.getElementById("mainImage");
+    if (mainImage) {
+      mainImage.src = el.src;
+    }
+  }
+
+  function openReviewImageModal(src, alt) {
+    const modal = document.getElementById("reviewImageModal");
+    const image = document.getElementById("reviewImageModalImg");
+    image.src = src;
+    image.alt = alt || "Imagen de resena";
+    modal.classList.add("is-open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeReviewImageModal() {
+    const modal = document.getElementById("reviewImageModal");
+    const image = document.getElementById("reviewImageModalImg");
+    modal.classList.remove("is-open");
+    image.src = "";
+    document.body.style.overflow = "";
+  }
+
+  function handleReviewModalBackdrop(event) {
+    if (event.target.id === "reviewImageModal") {
+      closeReviewImageModal();
+    }
+  }
+
+  document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape") {
+      closeReviewImageModal();
+    }
+  });
+</script>

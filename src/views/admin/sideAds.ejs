@@ -1,0 +1,84 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="mb-1">Publicidad lateral</h2>
+    <small class="text-muted">
+      Configura la publicidad izquierda y derecha para <strong><%= selectedStore.name %></strong>.
+    </small>
+  </div>
+</div>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'success' ? 'success' : 'danger' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<% if (errorMessages && errorMessages.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      <% errorMessages.forEach(message => { %>
+        <li><%= message %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<% if (adminSession?.role === "superadmin") { %>
+  <div class="bg-white shadow rounded p-3 mb-4">
+    <form method="GET" action="/admin/side-ads" class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">Tienda</label>
+        <select name="storeId" class="form-select" onchange="this.form.submit()">
+          <% stores.forEach(store => { %>
+            <option value="<%= store.id %>" <%= Number(selectedStore.id) === Number(store.id) ? "selected" : "" %>>
+              <%= store.name %> (<%= store.slug %>)
+            </option>
+          <% }) %>
+        </select>
+      </div>
+    </form>
+  </div>
+<% } %>
+
+<div class="row g-4">
+  <% ["left", "right"].forEach(position => { const ad = adsByPosition[position]; %>
+    <div class="col-lg-6">
+      <form method="POST" action="/admin/side-ads/<%= position %>?_csrf=<%= csrfToken %>" enctype="multipart/form-data" class="bg-white shadow rounded p-4 h-100">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="storeId" value="<%= selectedStore.id %>">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="mb-0"><%= positionLabels[position] %></h4>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="active-<%= position %>" name="isActive" <%= ad?.isActive !== false ? "checked" : "" %>>
+            <label class="form-check-label" for="active-<%= position %>">Activa</label>
+          </div>
+        </div>
+
+        <% if (ad?.image) { %>
+          <div class="mb-3">
+            <img src="/uploads/<%= ad.image %>" alt="<%= ad.title || positionLabels[position] %>" class="img-fluid rounded border">
+          </div>
+        <% } %>
+
+        <div class="mb-3">
+          <label class="form-label">Titulo opcional</label>
+          <input type="text" name="title" class="form-control" value="<%= ad?.title || '' %>" placeholder="Ej. Oferta destacada">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">URL de redireccion</label>
+          <input type="url" name="targetUrl" class="form-control" value="<%= ad?.targetUrl || '' %>" placeholder="https://...">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Imagen</label>
+          <input type="file" name="adImage" class="form-control" accept="image/*">
+          <div class="form-text">Si no cambias la imagen, se conserva la actual.</div>
+        </div>
+
+        <button class="btn btn-success" type="submit">Guardar publicidad</button>
+      </form>
+    </div>
+  <% }) %>
+</div>
