@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const dns = require("dns").promises;
 
 const DEFAULT_NOTIFICATION_CONFIG = {
   notifyOnNewOrder: true,
@@ -53,14 +54,41 @@ const getStoreNotificationConfig = (store) => {
 const isEmailNotificationsConfigured = () =>
   Boolean(process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_FROM);
 
-const getTransporter = () => {
+const resolveSmtpHost = async () => {
+  const originalHost = process.env.SMTP_HOST;
+  const forceIpv4 = parseBoolean(process.env.SMTP_FORCE_IPV4, true);
+
+  if (!originalHost || !forceIpv4) {
+    return {
+      host: originalHost,
+      servername: originalHost
+    };
+  }
+
+  try {
+    const resolved = await dns.lookup(originalHost, { family: 4 });
+    return {
+      host: resolved.address,
+      servername: originalHost
+    };
+  } catch (error) {
+    console.warn(`No se pudo resolver ${originalHost} por IPv4. Se usara el host original.`, error.message);
+    return {
+      host: originalHost,
+      servername: originalHost
+    };
+  }
+};
+
+const getTransporter = async () => {
   if (!isEmailNotificationsConfigured()) {
     return null;
   }
 
   if (!transporterInstance) {
+    const smtpTarget = await resolveSmtpHost();
     transporterInstance = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
+      host: smtpTarget.host,
       port: Number(process.env.SMTP_PORT),
       secure: parseBoolean(process.env.SMTP_SECURE, Number(process.env.SMTP_PORT) === 465),
       auth: process.env.SMTP_USER
@@ -68,7 +96,10 @@ const getTransporter = () => {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS || ""
         }
-        : undefined
+        : undefined,
+      tls: {
+        servername: smtpTarget.servername
+      }
     });
   }
 
@@ -76,7 +107,7 @@ const getTransporter = () => {
 };
 
 const sendEmail = async ({ to, subject, text, html }) => {
-  const transporter = getTransporter();
+  const transporter = await getTransporter();
 
   if (!transporter || !to || to.length === 0) {
     return false;
