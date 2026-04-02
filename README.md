@@ -52,6 +52,10 @@ SMTP_FORCE_IPV4=true
 SMTP_USER=your_smtp_user
 SMTP_PASS=your_smtp_password
 SMTP_FROM=notificaciones@tudominio.com
+EMAIL_PROVIDER=auto
+EMAIL_REQUEST_TIMEOUT_MS=15000
+RESEND_API_KEY=
+RESEND_FROM=notificaciones@tudominio.com
 ```
 
 `STORAGE_ROOT` es opcional en local. Si no se define, se usan las carpetas del proyecto.
@@ -102,6 +106,10 @@ SMTP_FORCE_IPV4=true
 SMTP_USER=your_smtp_user
 SMTP_PASS=your_smtp_password
 SMTP_FROM=notificaciones@tudominio.com
+EMAIL_PROVIDER=resend
+EMAIL_REQUEST_TIMEOUT_MS=15000
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM=notificaciones@tudominio.com
 ADMIN_EMAIL=admin@tudominio.com
 ADMIN_PASSWORD=change_this_password
 ```
@@ -135,6 +143,18 @@ npm run seed:admin
 7. Ejecutar `npm run db:sync`.
 8. Crear admin inicial si hace falta.
 9. Generar dominio publico y probar login, tienda, pedidos y uploads.
+
+### Notas sobre correo en Railway Hobby
+
+En Railway Hobby el SMTP saliente esta deshabilitado. Para este proyecto se recomienda usar `Resend` por API HTTP.
+
+Variables minimas:
+
+```env
+EMAIL_PROVIDER=resend
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM=notificaciones@tudominio.com
+```
 
 ## Credenciales iniciales del admin
 

@@ -36,6 +36,7 @@ const {
   isValidEmail,
   getStoreNotificationConfig,
   isEmailNotificationsConfigured,
+  getEmailProvider,
   sendTestNotification,
   notifyLowStock
 } = require("../utils/notifications");
@@ -2254,8 +2255,8 @@ exports.sendTestNotificationEmail = async (req, res) => {
   const config = getStoreNotificationConfig(selectedStore);
   const recipients = [...new Set([...config.orderEmails, ...config.lowStockEmails])];
 
-  if (!isEmailNotificationsConfigured()) {
-    setFlash(req, "error", "Falta configurar SMTP en el archivo .env antes de enviar una prueba.");
+  if (!getEmailProvider()) {
+    setFlash(req, "error", "No hay un proveedor de correo configurado correctamente.");
   } else if (recipients.length === 0) {
     setFlash(req, "error", "Debes guardar al menos un correo destinatario antes de enviar una prueba.");
   } else {
@@ -2263,6 +2264,7 @@ exports.sendTestNotificationEmail = async (req, res) => {
       await sendTestNotification(selectedStore, recipients);
       setFlash(req, "success", `Correo de prueba enviado a ${recipients.join(", ")}.`);
     } catch (error) {
+      console.error("Error al enviar correo de prueba:", error);
       setFlash(req, "error", error.message || "No se pudo enviar el correo de prueba.");
     }
   }

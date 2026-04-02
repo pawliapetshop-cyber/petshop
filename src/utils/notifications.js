@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const dns = require("dns").promises;
+const crypto = require("crypto");
 
 const DEFAULT_NOTIFICATION_CONFIG = {
   notifyOnNewOrder: true,
@@ -54,6 +55,31 @@ const getStoreNotificationConfig = (store) => {
 const isEmailNotificationsConfigured = () =>
   Boolean(process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_FROM);
 
+const isResendConfigured = () =>
+  Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM);
+
+const getEmailProvider = () => {
+  const configuredProvider = String(process.env.EMAIL_PROVIDER || "auto").trim().toLowerCase();
+
+  if (configuredProvider === "resend") {
+    return isResendConfigured() ? "resend" : null;
+  }
+
+  if (configuredProvider === "smtp") {
+    return isEmailNotificationsConfigured() ? "smtp" : null;
+  }
+
+  if (isResendConfigured()) {
+    return "resend";
+  }
+
+  if (isEmailNotificationsConfigured()) {
+    return "smtp";
+  }
+
+  return null;
+};
+
 const resolveSmtpHost = async () => {
   const originalHost = process.env.SMTP_HOST;
   const forceIpv4 = parseBoolean(process.env.SMTP_FORCE_IPV4, true);
@@ -106,10 +132,49 @@ const getTransporter = async () => {
   return transporterInstance;
 };
 
+const sendEmailWithResend = async ({ to, subject, text, html }) => {
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": crypto.randomUUID()
+    },
+    body: JSON.stringify({
+      from: process.env.RESEND_FROM,
+      to,
+      subject,
+      text,
+      html
+    }),
+    signal: AbortSignal.timeout(Number(process.env.EMAIL_REQUEST_TIMEOUT_MS) || 15000)
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Resend API error: ${response.status} ${errorBody}`);
+  }
+
+  return true;
+};
+
 const sendEmail = async ({ to, subject, text, html }) => {
+  const provider = getEmailProvider();
+
+  if (!provider || !to || to.length === 0) {
+    if (!provider) {
+      throw new Error("No hay un proveedor de correo configurado correctamente.");
+    }
+    return false;
+  }
+
+  if (provider === "resend") {
+    return sendEmailWithResend({ to, subject, text, html });
+  }
+
   const transporter = await getTransporter();
 
-  if (!transporter || !to || to.length === 0) {
+  if (!transporter) {
     return false;
   }
 
@@ -125,7 +190,7 @@ const sendEmail = async ({ to, subject, text, html }) => {
 };
 
 const sendTestNotification = async (store, recipients = []) => {
-  if (!isEmailNotificationsConfigured() || recipients.length === 0) {
+  if (!getEmailProvider() || recipients.length === 0) {
     return false;
   }
 
@@ -153,7 +218,7 @@ const sendTestNotification = async (store, recipients = []) => {
 const notifyNewOrder = async (store, order) => {
   const config = getStoreNotificationConfig(store);
 
-  if (!isEmailNotificationsConfigured() || !config.notifyOnNewOrder || config.orderEmails.length === 0) {
+  if (!getEmailProvider() || !config.notifyOnNewOrder || config.orderEmails.length === 0) {
     return false;
   }
 
@@ -197,7 +262,7 @@ const notifyNewOrder = async (store, order) => {
 const notifyLowStock = async (store, items = [], contextLabel = "inventario") => {
   const config = getStoreNotificationConfig(store);
 
-  if (!isEmailNotificationsConfigured() || !config.notifyOnLowStock || config.lowStockEmails.length === 0 || items.length === 0) {
+  if (!getEmailProvider() || !config.notifyOnLowStock || config.lowStockEmails.length === 0 || items.length === 0) {
     return false;
   }
 
@@ -244,6 +309,7 @@ module.exports = {
   isValidEmail,
   getStoreNotificationConfig,
   isEmailNotificationsConfigured,
+  getEmailProvider,
   sendTestNotification,
   notifyNewOrder,
   notifyLowStock
