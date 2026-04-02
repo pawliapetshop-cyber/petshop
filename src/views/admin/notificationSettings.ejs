@@ -25,10 +25,16 @@
 
 <div class="alert alert-<%= smtpConfigured ? 'success' : 'warning' %>">
   <% if (smtpConfigured) { %>
-    El servidor SMTP esta configurado. Las notificaciones por correo estan listas para enviarse.
+    El proveedor de correo esta configurado. Las notificaciones quedaran etiquetadas con prefijos por tienda para facilitar filtros o reenvios en Gmail.
   <% } else { %>
-    Falta configurar SMTP en variables de entorno. Puedes guardar destinatarios, pero no se enviaran correos hasta completar esa configuracion.
+    Falta configurar un proveedor de correo en variables de entorno. Puedes guardar destinatarios, pero no se enviaran correos hasta completar esa configuracion.
   <% } %>
+</div>
+
+<div class="alert alert-light border">
+  <strong>Consejo para Gmail:</strong>
+  Los correos salen con prefijos como <code>[TIENDA:PAWLIA][TIPO:PEDIDO_NUEVO]</code> y tambien incluyen lineas como <code>TIENDA_TAG: PAWLIA</code> y <code>TIPO_ALERTA: PEDIDO_NUEVO</code>.
+  Eso te permite crear filtros y reenvios automaticos por tienda o por tipo de evento.
 </div>
 
 <% if (adminSession?.role === "superadmin") { %>

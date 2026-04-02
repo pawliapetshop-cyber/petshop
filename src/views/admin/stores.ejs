@@ -38,6 +38,12 @@
     </div>
 
     <div class="col-md-4">
+      <label class="form-label">Clave de notificacion</label>
+      <input type="text" name="notificationTag" class="form-control" value="<%= formData?.notificationTag || '' %>" placeholder="Ej. PAWLIA o MODA_ANA">
+      <div class="form-text">Se usa en asuntos y cuerpos de correo para filtros de Gmail.</div>
+    </div>
+
+    <div class="col-md-4">
       <label class="form-label">Telefono</label>
       <input type="text" name="contactPhone" class="form-control" value="<%= formData?.contactPhone || '' %>">
     </div>
@@ -249,6 +255,11 @@
         <div class="col-md-3">
           <label class="form-label">Correo</label>
           <input type="email" name="contactEmail" class="form-control" value="<%= store.contactEmail || '' %>">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Clave de notificacion</label>
+          <input type="text" name="notificationTag" class="form-control" value="<%= store.themeConfig?.notificationTag || '' %>" placeholder="PAWLIA">
         </div>
 
         <div class="col-md-2">

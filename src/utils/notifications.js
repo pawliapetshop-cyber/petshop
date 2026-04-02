@@ -38,6 +38,26 @@ const parseRecipients = (value) => {
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
 
+const getStoreEmailTag = (store) =>
+  String(store?.themeConfig?.notificationTag || store?.slug || store?.name || "tienda")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "") || "TIENDA";
+
+const buildSubjectPrefix = (store, alertType) => `[TIENDA:${getStoreEmailTag(store)}][TIPO:${alertType}]`;
+
+const buildEmailHeaderBlock = (store, alertType, extraLines = []) => {
+  const lines = [
+    `TIENDA_TAG: ${getStoreEmailTag(store)}`,
+    `TIENDA_NOMBRE: ${store?.name || "Tienda"}`,
+    `TIPO_ALERTA: ${alertType}`,
+    ...extraLines.filter(Boolean)
+  ];
+
+  return lines.join("\n");
+};
+
 const getStoreNotificationConfig = (store) => {
   const source = store?.notificationConfig || {};
   return {
@@ -194,17 +214,27 @@ const sendTestNotification = async (store, recipients = []) => {
     return false;
   }
 
-  const subject = `[${store.name}] Prueba de notificaciones`;
+  const subject = `${buildSubjectPrefix(store, "PRUEBA")} Prueba de notificaciones`;
+  const headerBlock = buildEmailHeaderBlock(store, "PRUEBA", [
+    `DESTINATARIOS: ${recipients.join(", ")}`
+  ]);
   const text = [
+    headerBlock,
+    "",
     `Esta es una prueba del sistema de notificaciones de ${store.name}.`,
     "",
-    "Si recibiste este correo, la configuracion SMTP del proyecto funciona correctamente."
+    "Si recibiste este correo, la configuracion del proyecto funciona correctamente.",
+    "",
+    "Sugerencia Gmail: crea filtros por TIENDA_TAG o TIPO_ALERTA para etiquetar o reenviar automaticamente."
   ].join("\n");
 
   const html = `
     <h2>Prueba de notificaciones</h2>
+    <p><strong>Etiqueta de tienda:</strong> ${getStoreEmailTag(store)}</p>
+    <p><strong>Tipo de alerta:</strong> PRUEBA</p>
     <p>Esta es una prueba del sistema de notificaciones de <strong>${store.name}</strong>.</p>
-    <p>Si recibiste este correo, la configuracion SMTP del proyecto funciona correctamente.</p>
+    <p>Si recibiste este correo, la configuracion del proyecto funciona correctamente.</p>
+    <p><em>Tip:</em> puedes crear filtros en Gmail usando <code>TIENDA_TAG: ${getStoreEmailTag(store)}</code> o <code>TIPO_ALERTA: PRUEBA</code>.</p>
   `;
 
   return sendEmail({
@@ -222,8 +252,16 @@ const notifyNewOrder = async (store, order) => {
     return false;
   }
 
-  const subject = `[${store.name}] Nuevo pedido #${order.id}`;
+  const subject = `${buildSubjectPrefix(store, "PEDIDO_NUEVO")} Nuevo pedido #${order.id}`;
+  const headerBlock = buildEmailHeaderBlock(store, "PEDIDO_NUEVO", [
+    `PEDIDO_ID: ${order.id}`,
+    `CLIENTE: ${order.name}`,
+    `CIUDAD: ${order.city}`,
+    `PAGO: ${order.paymentMethod}`
+  ]);
   const text = [
+    headerBlock,
+    "",
     `Se registro un nuevo pedido en ${store.name}.`,
     ``,
     `Pedido: #${order.id}`,
@@ -238,6 +276,8 @@ const notifyNewOrder = async (store, order) => {
 
   const html = `
     <h2>Nuevo pedido en ${store.name}</h2>
+    <p><strong>Etiqueta de tienda:</strong> ${getStoreEmailTag(store)}</p>
+    <p><strong>Tipo de alerta:</strong> PEDIDO_NUEVO</p>
     <p>Se registro un nuevo pedido en la tienda.</p>
     <ul>
       <li><strong>Pedido:</strong> #${order.id}</li>
@@ -273,8 +313,14 @@ const notifyLowStock = async (store, items = [], contextLabel = "inventario") =>
     threshold: Number(item.threshold) || 0
   }));
 
-  const subject = `[${store.name}] Alerta de bajo stock`;
+  const subject = `${buildSubjectPrefix(store, "BAJO_STOCK")} Alerta de bajo stock`;
+  const headerBlock = buildEmailHeaderBlock(store, "BAJO_STOCK", [
+    `ORIGEN: ${contextLabel}`,
+    `ITEMS: ${normalizedItems.length}`
+  ]);
   const text = [
+    headerBlock,
+    "",
     `Se detecto inventario bajo en ${store.name} (${contextLabel}).`,
     ``,
     ...normalizedItems.map((item) =>
@@ -284,6 +330,9 @@ const notifyLowStock = async (store, items = [], contextLabel = "inventario") =>
 
   const html = `
     <h2>Alerta de bajo stock en ${store.name}</h2>
+    <p><strong>Etiqueta de tienda:</strong> ${getStoreEmailTag(store)}</p>
+    <p><strong>Tipo de alerta:</strong> BAJO_STOCK</p>
+    <p><strong>Origen:</strong> ${contextLabel}</p>
     <p>Se detecto inventario bajo (${contextLabel}).</p>
     <ul>
       ${normalizedItems.map((item) => `
