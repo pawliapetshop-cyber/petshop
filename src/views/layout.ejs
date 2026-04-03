@@ -15,7 +15,9 @@
     const buttonPrimaryColor = currentStore?.themeConfig?.buttonPrimaryColor || primaryColor;
     const buttonSecondaryColor = currentStore?.themeConfig?.buttonSecondaryColor || secondaryColor;
     const backgroundDecorMode = currentStore?.themeConfig?.backgroundDecorMode || "soft";
+    const backgroundPattern = currentStore?.themeConfig?.backgroundPattern || "none";
     const backgroundDecorOpacity = Number(currentStore?.themeConfig?.backgroundDecorOpacity ?? 18);
+    const backgroundImage = currentStore?.themeConfig?.backgroundImage ? `/uploads/${currentStore.themeConfig.backgroundImage}` : "";
     const surfaceRadius = Number(currentStore?.themeConfig?.surfaceRadius ?? 24);
     const buttonRadius = Number(currentStore?.themeConfig?.buttonRadius ?? 12);
     const storeLogo = currentStore?.logo ? `/uploads/${currentStore.logo}` : "/logo.jpeg";
@@ -24,6 +26,13 @@
       : backgroundDecorMode === "none"
         ? "none"
         : `radial-gradient(circle at left 16%, color-mix(in srgb, ${primaryColor} ${backgroundDecorOpacity}%, white) 0%, transparent 44%), radial-gradient(circle at right 88%, color-mix(in srgb, ${secondaryColor} ${Math.max(backgroundDecorOpacity - 8, 6)}%, white) 0%, transparent 32%)`;
+    const backgroundPatternImage = backgroundPattern === "dots"
+      ? `radial-gradient(circle, color-mix(in srgb, ${secondaryColor} 12%, transparent) 1px, transparent 1.5px)`
+      : backgroundPattern === "grid"
+        ? `linear-gradient(color-mix(in srgb, ${secondaryColor} 8%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, ${secondaryColor} 8%, transparent) 1px, transparent 1px)`
+        : backgroundPattern === "diagonal"
+          ? `repeating-linear-gradient(135deg, color-mix(in srgb, ${secondaryColor} 7%, transparent) 0 10px, transparent 10px 24px)`
+          : "none";
   %>
 
   <title><%= currentStore?.name || "Pawlia" %></title>
@@ -46,10 +55,20 @@
 
     body {
       background-color: var(--store-background);
-      background-image: <%- JSON.stringify(backgroundDecorImage) %>;
-      background-repeat: no-repeat;
-      background-size: 34rem 34rem, 28rem 28rem, 26rem 26rem;
-      background-position: -12rem 7rem, calc(100% + 8rem) 78%, -10rem calc(100% - 3rem);
+      background-image:
+        <%= backgroundImage ? `linear-gradient(rgba(255,255,255,0.72), rgba(255,255,255,0.82)), url('${backgroundImage}')` : "none" %>,
+        <%- backgroundPatternImage %>,
+        <%- backgroundDecorImage %>;
+      background-repeat: no-repeat, repeat, no-repeat;
+      background-size:
+        <%= backgroundImage ? "cover" : "auto" %>,
+        <%= backgroundPattern === "dots" ? "20px 20px" : backgroundPattern === "grid" ? "28px 28px" : backgroundPattern === "diagonal" ? "auto" : "auto" %>,
+        34rem 34rem, 28rem 28rem, 26rem 26rem;
+      background-position:
+        center top,
+        left top,
+        -12rem 7rem, calc(100% + 8rem) 78%, -10rem calc(100% - 3rem);
+      background-attachment: scroll, scroll, scroll;
       overflow-x: hidden;
     }
 
@@ -160,8 +179,14 @@
 
     @media (max-width: 991.98px) {
       body {
-        background-size: 24rem 24rem, 20rem 20rem, 16rem 16rem;
-        background-position: -11rem 6rem, calc(100% + 8rem) 82%, -9rem calc(100% - 2rem);
+        background-size:
+          <%= backgroundImage ? "cover" : "auto" %>,
+          <%= backgroundPattern === "dots" ? "18px 18px" : backgroundPattern === "grid" ? "24px 24px" : backgroundPattern === "diagonal" ? "auto" : "auto" %>,
+          24rem 24rem, 20rem 20rem, 16rem 16rem;
+        background-position:
+          center top,
+          left top,
+          -11rem 6rem, calc(100% + 8rem) 82%, -9rem calc(100% - 2rem);
       }
     }
   </style>

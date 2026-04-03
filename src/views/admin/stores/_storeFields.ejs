@@ -106,6 +106,16 @@
         <label class="form-label">Intensidad del fondo</label>
         <input type="range" name="backgroundDecorOpacity" class="form-range" min="0" max="30" step="2" value="<%= mode === 'update' ? (theme.backgroundDecorOpacity || '18') : (data.backgroundDecorOpacity || '18') %>">
       </div>
+      <div class="col-md-4">
+        <label class="form-label">Patron de fondo</label>
+        <select name="backgroundPattern" class="form-select">
+          <% const currentPattern = mode === 'update' ? (theme.backgroundPattern || 'none') : (data.backgroundPattern || 'none'); %>
+          <option value="none" <%= currentPattern === 'none' ? 'selected' : '' %>>Sin patron</option>
+          <option value="dots" <%= currentPattern === 'dots' ? 'selected' : '' %>>Puntos suaves</option>
+          <option value="grid" <%= currentPattern === 'grid' ? 'selected' : '' %>>Cuadricula ligera</option>
+          <option value="diagonal" <%= currentPattern === 'diagonal' ? 'selected' : '' %>>Lineas diagonales</option>
+        </select>
+      </div>
       <div class="col-md-2">
         <label class="form-label">Radio secciones</label>
         <input type="number" name="surfaceRadius" class="form-control" min="12" max="40" step="2" value="<%= mode === 'update' ? (theme.surfaceRadius || '24') : (data.surfaceRadius || '24') %>">
@@ -113,6 +123,16 @@
       <div class="col-md-2">
         <label class="form-label">Radio botones</label>
         <input type="number" name="buttonRadius" class="form-control" min="6" max="24" step="2" value="<%= mode === 'update' ? (theme.buttonRadius || '12') : (data.buttonRadius || '12') %>">
+      </div>
+      <div class="col-md-4">
+        <% if (mode === 'update' && theme.backgroundImage) { %>
+          <div class="mb-2">
+            <img src="/uploads/<%= theme.backgroundImage %>" alt="Fondo de <%= data.name || 'tienda' %>" class="img-fluid store-promo-preview">
+          </div>
+        <% } %>
+        <label class="form-label">Imagen de fondo</label>
+        <input type="file" name="backgroundImage" class="form-control" accept="image/*">
+        <div class="form-text">Opcional. Se superpone de forma suave para no tapar el contenido.</div>
       </div>
     </div>
   </div>

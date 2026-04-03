@@ -97,7 +97,9 @@ const emptyStoreForm = {
   buttonPrimaryColor: "#198754",
   buttonSecondaryColor: "#212529",
   backgroundDecorMode: "soft",
+  backgroundPattern: "none",
   backgroundDecorOpacity: "18",
+  backgroundImage: "",
   surfaceRadius: "24",
   buttonRadius: "12",
   notificationTag: "",
@@ -1942,7 +1944,9 @@ exports.createStore = async (req, res) => {
     buttonPrimaryColor: (req.body.buttonPrimaryColor || req.body.primaryColor || "#198754").trim(),
     buttonSecondaryColor: (req.body.buttonSecondaryColor || req.body.secondaryColor || "#212529").trim(),
     backgroundDecorMode: ["soft", "mesh", "none"].includes(req.body.backgroundDecorMode) ? req.body.backgroundDecorMode : "soft",
+    backgroundPattern: ["none", "dots", "grid", "diagonal"].includes(req.body.backgroundPattern) ? req.body.backgroundPattern : "none",
     backgroundDecorOpacity: String(Math.min(Math.max(Number(req.body.backgroundDecorOpacity) || 18, 0), 30)),
+    backgroundImage: getUploadedFileName(req, "backgroundImage"),
     surfaceRadius: String(Math.min(Math.max(Number(req.body.surfaceRadius) || 24, 12), 40)),
     buttonRadius: String(Math.min(Math.max(Number(req.body.buttonRadius) || 12, 6), 24)),
     notificationTag: (req.body.notificationTag || "").trim().toUpperCase(),
@@ -1980,7 +1984,7 @@ exports.createStore = async (req, res) => {
   }
 
   if (errors.length > 0) {
-    removeRequestUploads(req, ["storeLogo", "promoImage1", "promoImage2"]);
+    removeRequestUploads(req, ["storeLogo", "backgroundImage", "promoImage1", "promoImage2"]);
     return renderStoresPage(req, res, {
       status: 400,
       errorMessages: errors,
@@ -2006,7 +2010,9 @@ exports.createStore = async (req, res) => {
       buttonPrimaryColor: formData.buttonPrimaryColor || formData.primaryColor || "#198754",
       buttonSecondaryColor: formData.buttonSecondaryColor || formData.secondaryColor || "#212529",
       backgroundDecorMode: formData.backgroundDecorMode,
+      backgroundPattern: formData.backgroundPattern,
       backgroundDecorOpacity: formData.backgroundDecorOpacity,
+      backgroundImage: formData.backgroundImage || null,
       surfaceRadius: formData.surfaceRadius,
       buttonRadius: formData.buttonRadius,
       notificationTag: formData.notificationTag || null,
@@ -2060,10 +2066,14 @@ exports.updateStore = async (req, res) => {
     backgroundDecorMode: ["soft", "mesh", "none"].includes(req.body.backgroundDecorMode)
       ? req.body.backgroundDecorMode
       : (store.themeConfig?.backgroundDecorMode || "soft"),
+    backgroundPattern: ["none", "dots", "grid", "diagonal"].includes(req.body.backgroundPattern)
+      ? req.body.backgroundPattern
+      : (store.themeConfig?.backgroundPattern || "none"),
     backgroundDecorOpacity: String(Math.min(Math.max(
       Number(req.body.backgroundDecorOpacity ?? store.themeConfig?.backgroundDecorOpacity) || 18,
       0
     ), 30)),
+    backgroundImage: getUploadedFileName(req, "backgroundImage") || store.themeConfig?.backgroundImage || "",
     surfaceRadius: String(Math.min(Math.max(
       Number(req.body.surfaceRadius ?? store.themeConfig?.surfaceRadius) || 24,
       12
@@ -2109,13 +2119,17 @@ exports.updateStore = async (req, res) => {
   }
 
   if (errors.length > 0) {
-    removeRequestUploads(req, ["storeLogo", "promoImage1", "promoImage2"]);
+    removeRequestUploads(req, ["storeLogo", "backgroundImage", "promoImage1", "promoImage2"]);
     setFlash(req, "error", errors[0]);
     return res.redirect("/admin/stores");
   }
 
   if (getUploadedFileName(req, "storeLogo") && store.logo && store.logo !== formData.logo) {
     removeUploadedAsset(store.logo);
+  }
+
+  if (getUploadedFileName(req, "backgroundImage") && store.themeConfig?.backgroundImage && store.themeConfig.backgroundImage !== formData.backgroundImage) {
+    removeUploadedAsset(store.themeConfig.backgroundImage);
   }
 
   removeReplacedPromoImages(existingPromoSections, formData.promoSections);
@@ -2139,7 +2153,9 @@ exports.updateStore = async (req, res) => {
       buttonPrimaryColor: formData.buttonPrimaryColor || formData.primaryColor || "#198754",
       buttonSecondaryColor: formData.buttonSecondaryColor || formData.secondaryColor || "#212529",
       backgroundDecorMode: formData.backgroundDecorMode,
+      backgroundPattern: formData.backgroundPattern,
       backgroundDecorOpacity: formData.backgroundDecorOpacity,
+      backgroundImage: formData.backgroundImage || null,
       surfaceRadius: formData.surfaceRadius,
       buttonRadius: formData.buttonRadius,
       notificationTag: formData.notificationTag || null,
