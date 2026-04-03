@@ -229,6 +229,20 @@
         <input type="text" name="popupTargetUrl" class="form-control" value="<%= mode === 'update' ? (theme.popupTargetUrl || '') : (data.popupTargetUrl || '') %>" placeholder="/s/slug/producto/1 o https://...">
       </div>
       <div class="col-md-4">
+        <label class="form-label">Inicio de campaña</label>
+        <input type="date" name="popupStartDate" class="form-control" value="<%= mode === 'update' ? (theme.popupStartDate || '') : (data.popupStartDate || '') %>">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Fin de campaña</label>
+        <input type="date" name="popupEndDate" class="form-control" value="<%= mode === 'update' ? (theme.popupEndDate || '') : (data.popupEndDate || '') %>">
+      </div>
+      <div class="col-md-4">
+        <div class="form-check form-switch mt-4">
+          <input class="form-check-input" type="checkbox" id="popupOnlyHome-<%= mode %>-<%= data.id || 'new' %>" name="popupOnlyHome" <%= (mode === 'update' ? theme.popupOnlyHome !== false : data.popupOnlyHome !== false) ? 'checked' : '' %>>
+          <label class="form-check-label" for="popupOnlyHome-<%= mode %>-<%= data.id || 'new' %>">Mostrar solo en la portada</label>
+        </div>
+      </div>
+      <div class="col-md-4">
         <div class="form-check form-switch mt-4">
           <input class="form-check-input" type="checkbox" id="popupOpenInNewTab-<%= mode %>-<%= data.id || 'new' %>" name="popupOpenInNewTab" <%= (mode === 'update' ? theme.popupOpenInNewTab !== false : data.popupOpenInNewTab !== false) ? 'checked' : '' %>>
           <label class="form-check-label" for="popupOpenInNewTab-<%= mode %>-<%= data.id || 'new' %>">Abrir en nueva pestaña si es enlace externo</label>

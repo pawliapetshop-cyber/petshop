@@ -53,6 +53,7 @@ app.use((req, res, next) => {
   res.locals.cart = req.session.cart || [];
   res.locals.currentSearch = typeof req.query.search === "string" ? req.query.search : "";
   res.locals.adminSession = req.session.admin || null;
+  res.locals.currentPath = req.path;
   next();
 });
 

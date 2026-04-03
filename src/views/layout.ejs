@@ -21,7 +21,15 @@
     const surfaceRadius = Number(currentStore?.themeConfig?.surfaceRadius ?? 24);
     const buttonRadius = Number(currentStore?.themeConfig?.buttonRadius ?? 12);
     const storeLogo = currentStore?.logo ? `/uploads/${currentStore.logo}` : "/logo.jpeg";
-    const popupConfig = currentStore?.themeConfig?.popupEnabled && currentStore?.themeConfig?.popupImage
+    const currentRoutePath = typeof currentPath !== "undefined" ? currentPath : currentStoreBasePath;
+    const popupStartDate = currentStore?.themeConfig?.popupStartDate || "";
+    const popupEndDate = currentStore?.themeConfig?.popupEndDate || "";
+    const todayDate = new Date().toISOString().slice(0, 10);
+    const popupScheduled = (!popupStartDate || popupStartDate <= todayDate) && (!popupEndDate || popupEndDate >= todayDate);
+    const popupMatchesPath = currentStore?.themeConfig?.popupOnlyHome === false
+      ? true
+      : (currentRoutePath === currentStoreBasePath || currentRoutePath === `${currentStoreBasePath}/`);
+    const popupConfig = currentStore?.themeConfig?.popupEnabled && currentStore?.themeConfig?.popupImage && popupScheduled && popupMatchesPath
       ? {
           image: `/uploads/${currentStore.themeConfig.popupImage}`,
           title: currentStore.themeConfig.popupTitle || "",
@@ -31,7 +39,10 @@
             currentStore.slug || "store",
             currentStore.themeConfig.popupImage || "",
             currentStore.themeConfig.popupTargetUrl || "",
-            currentStore.themeConfig.popupTitle || ""
+            currentStore.themeConfig.popupTitle || "",
+            popupStartDate,
+            popupEndDate,
+            currentStore.themeConfig.popupOnlyHome === false ? "all-pages" : "home-only"
           ].join(":")
         }
       : null;
