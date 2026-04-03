@@ -1,25 +1,177 @@
 <style>
-  .product-container {
+  .product-shell {
+    gap: 1.5rem;
+  }
+
+  .product-card,
+  .product-block {
     background: white;
-    border-radius: 10px;
-    padding: 25px;
+    border-radius: 24px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
   }
 
-  .main-image {
-    max-height: 400px;
-    object-fit: cover;
-    border-radius: 10px;
+  .product-card {
+    padding: 1.5rem;
   }
 
-  .thumbnail {
-    width: 70px;
-    cursor: pointer;
-    border-radius: 5px;
+  .product-block {
+    padding: 1.75rem;
+  }
+
+  .product-gallery-panel {
+    background: linear-gradient(180deg, rgba(248,250,252,0.98), rgba(255,255,255,0.98));
+    border-radius: 24px;
+    padding: 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+  }
+
+  .product-stage {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(243,246,249,0.95));
+    min-height: 440px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-in;
+  }
+
+  .product-stage img {
+    width: 100%;
+    max-height: 440px;
+    object-fit: contain;
+    display: none;
+    padding: 1rem;
+  }
+
+  .product-stage img.is-active {
+    display: block;
+  }
+
+  .product-stage-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.68);
+    color: white;
+    font-size: 1.4rem;
+    line-height: 1;
+    z-index: 2;
+  }
+
+  .product-stage-control--prev {
+    left: 14px;
+  }
+
+  .product-stage-control--next {
+    right: 14px;
+  }
+
+  .product-thumb-strip {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  .product-thumb {
+    width: 86px;
+    height: 86px;
+    border-radius: 20px;
+    overflow: hidden;
     border: 2px solid transparent;
+    background: #f8fafc;
+    padding: 0;
+    flex: 0 0 auto;
+    cursor: pointer;
   }
 
-  .thumbnail:hover {
-    border: 2px solid #198754;
+  .product-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .product-thumb.is-active {
+    border-color: #198754;
+    box-shadow: 0 10px 24px rgba(25, 135, 84, 0.18);
+  }
+
+  .product-gallery-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.85rem;
+  }
+
+  .product-gallery-counter {
+    color: #64748b;
+    font-size: 0.92rem;
+  }
+
+  .product-gallery-hint {
+    color: #64748b;
+    font-size: 0.85rem;
+  }
+
+  .product-lightbox,
+  .review-image-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.78);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 1050;
+    backdrop-filter: blur(6px);
+  }
+
+  .product-lightbox.is-open,
+  .review-image-modal.is-open {
+    display: flex;
+  }
+
+  .product-lightbox__dialog,
+  .review-image-modal__dialog {
+    position: relative;
+    max-width: min(1100px, 100%);
+    max-height: 90vh;
+  }
+
+  .product-lightbox__image,
+  .review-image-modal__image {
+    max-width: 100%;
+    max-height: 82vh;
+    border-radius: 20px;
+    display: block;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    background: white;
+  }
+
+  .product-lightbox__close,
+  .review-image-modal__close {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    border: 0;
+    background: #fff;
+    color: #111;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
   }
 
   .review-image-thumb {
@@ -35,49 +187,14 @@
     transform: scale(1.03);
   }
 
-  .review-image-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.76);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    z-index: 1050;
-  }
+  @media (max-width: 991.98px) {
+    .product-stage {
+      min-height: 320px;
+    }
 
-  .review-image-modal.is-open {
-    display: flex;
-  }
-
-  .review-image-modal__dialog {
-    position: relative;
-    max-width: min(920px, 100%);
-    max-height: 90vh;
-  }
-
-  .review-image-modal__image {
-    max-width: 100%;
-    max-height: 82vh;
-    border-radius: 16px;
-    display: block;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-  }
-
-  .review-image-modal__close {
-    position: absolute;
-    top: -14px;
-    right: -14px;
-    border: 0;
-    background: #fff;
-    color: #111;
-    width: 40px;
-    height: 40px;
-    border-radius: 999px;
-    font-size: 22px;
-    line-height: 1;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+    .product-stage img {
+      max-height: 320px;
+    }
   }
 </style>
 
@@ -94,134 +211,163 @@
     const available = Number(product.inventorySummary?.available) || 0;
     const variants = product.inventorySummary?.variants || [];
     const hasVariants = Boolean(product.inventorySummary?.hasVariants);
+    const images = product.ProductImages || [];
+    const main = images.find(i => i.isMain) || images[0];
   %>
 
-  <div class="row product-container shadow mb-4">
-    <div class="col-md-6 text-center">
-      <%
-        const images = product.ProductImages || [];
-        const main = images.find(i => i.isMain) || images[0];
-      %>
-
-      <% if (main) { %>
-        <img
-          id="mainImage"
-          src="/uploads/<%= main.image %>"
-          class="img-fluid main-image mb-3"
-          alt="<%= product.name %>"
-        >
-      <% } %>
-
-      <div class="d-flex justify-content-center gap-2 flex-wrap">
-        <% images.forEach(img => { %>
-          <img
-            src="/uploads/<%= img.image %>"
-            class="thumbnail"
-            alt="<%= product.name %>"
-            onclick="changeImage(this)"
-          >
-        <% }) %>
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
-        <div>
-          <small class="text-uppercase text-muted"><%= product.Category?.name %></small>
-          <h3 class="mt-1"><%= product.name %></h3>
-        </div>
-        <a href="<%= storeBasePath %>" class="btn btn-outline-secondary btn-sm">Volver</a>
-      </div>
-
-      <h2 class="text-success">
-        <% if (product.pricingSummary?.hasPriceRange) { %>
-          Desde $<%= Number(product.pricingSummary.effectiveMinPrice).toLocaleString() %>
-        <% } else { %>
-          $<%= Number(product.price).toLocaleString() %>
-        <% } %>
-      </h2>
-
-      <% if (product.pricingSummary?.hasPriceRange) { %>
-        <p class="text-muted mb-2">
-          Rango hasta $<%= Number(product.pricingSummary.effectiveMaxPrice).toLocaleString() %> segun la variante.
-        </p>
-      <% } %>
-
-      <p class="mt-3"><%= product.description %></p>
-
-      <div class="d-flex align-items-center gap-2 mb-3">
-        <span class="text-warning fs-5">★</span>
-        <strong><%= product.reviewSummary?.averageLabel || "0.0" %></strong>
-        <small class="text-muted">(<%= product.reviewSummary?.count || 0 %> resenas aprobadas)</small>
-      </div>
-
-      <p>
-        <strong>Disponibilidad:</strong>
-        <% if (available > 0) { %>
-          <span class="text-success"><%= available %> disponibles</span>
-        <% } else { %>
-          <span class="text-danger">Sin stock</span>
-        <% } %>
-      </p>
-
-      <% if (hasVariants) { %>
-        <p class="text-muted small">
-          Este producto se vende por opciones. Elige la presentacion adecuada antes de agregarlo al carrito.
-        </p>
-      <% } %>
-
-      <% if (available > 0) { %>
-        <form method="POST" action="<%= `${storeBasePath}/cart/add` %>">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <input type="hidden" name="productId" value="<%= product.id %>">
-
-          <% if (hasVariants) { %>
-            <div class="mb-3">
-              <label class="form-label"><strong>Variante</strong></label>
-              <select name="variantId" class="form-select" required>
-                <option value="">Selecciona una opcion</option>
-                <% variants.forEach(variant => { %>
-                  <option
-                    value="<%= variant.id %>"
-                    <%= String(selectedVariantId || "") === String(variant.id) ? "selected" : "" %>
-                    <%= variant.available <= 0 ? "disabled" : "" %>
+  <div class="row product-shell mb-4">
+    <div class="col-12">
+      <div class="product-card">
+        <div class="row g-4 align-items-start">
+          <div class="col-lg-6">
+            <div class="product-gallery-panel">
+              <div class="product-stage" id="productStage" onclick="openProductLightbox()">
+                <% images.forEach((img, index) => { %>
+                  <img
+                    src="/uploads/<%= img.image %>"
+                    alt="<%= product.name %>"
+                    class="<%= index === 0 || img.id === main?.id ? 'is-active' : '' %>"
+                    data-gallery-image
                   >
-                    <%= variant.name %>
-                    <% if (variant.price !== null && variant.price !== undefined) { %>
-                      - $<%= Number(variant.price).toLocaleString() %>
-                    <% } %>
-                    - <%= variant.available > 0 ? `${variant.available} disponibles` : "Sin stock" %>
-                  </option>
                 <% }) %>
-              </select>
-              <div class="form-text">
-                El precio y la disponibilidad cambian segun la opcion seleccionada.
-              </div>
-            </div>
-          <% } %>
 
-          <button class="btn btn-success w-100">
-            <%= hasVariants ? "Agregar variante al carrito" : "Agregar al carrito" %>
-          </button>
-        </form>
-      <% } else { %>
-        <button class="btn btn-secondary w-100" disabled>
-          Sin stock
-        </button>
-      <% } %>
+                <% if (images.length > 1) { %>
+                  <button type="button" class="product-stage-control product-stage-control--prev" onclick="event.stopPropagation(); changeGallerySlide(-1);" aria-label="Imagen anterior">
+                    &#8249;
+                  </button>
+                  <button type="button" class="product-stage-control product-stage-control--next" onclick="event.stopPropagation(); changeGallerySlide(1);" aria-label="Imagen siguiente">
+                    &#8250;
+                  </button>
+                <% } %>
+              </div>
+
+              <% if (images.length > 0) { %>
+                <div class="product-gallery-meta">
+                  <div class="product-gallery-counter">
+                    <span id="galleryCounter"><%= images.length > 1 ? `1 / ${images.length}` : `1 imagen` %></span>
+                  </div>
+                  <div class="product-gallery-hint">Haz clic sobre la imagen para verla en grande.</div>
+                </div>
+              <% } %>
+
+              <% if (images.length > 1) { %>
+                <div class="product-thumb-strip">
+                  <% images.forEach((img, index) => { %>
+                    <button
+                      type="button"
+                      class="product-thumb <%= index === 0 || img.id === main?.id ? 'is-active' : '' %>"
+                      onclick="setGallerySlide(<%= index %>)"
+                      data-gallery-thumb
+                      aria-label="Ver imagen <%= index + 1 %>"
+                    >
+                      <img src="/uploads/<%= img.image %>" alt="<%= product.name %>">
+                    </button>
+                  <% }) %>
+                </div>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+              <div>
+                <small class="text-uppercase text-muted"><%= product.Category?.name %></small>
+                <h3 class="mt-1"><%= product.name %></h3>
+              </div>
+              <a href="<%= storeBasePath %>" class="btn btn-outline-secondary btn-sm">Volver</a>
+            </div>
+
+            <h2 class="text-success">
+              <% if (product.pricingSummary?.hasPriceRange) { %>
+                Desde $<%= Number(product.pricingSummary.effectiveMinPrice).toLocaleString() %>
+              <% } else { %>
+                $<%= Number(product.price).toLocaleString() %>
+              <% } %>
+            </h2>
+
+            <% if (product.pricingSummary?.hasPriceRange) { %>
+              <p class="text-muted mb-2">
+                Rango hasta $<%= Number(product.pricingSummary.effectiveMaxPrice).toLocaleString() %> segun la variante.
+              </p>
+            <% } %>
+
+            <p class="mt-3"><%= product.description %></p>
+
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <span class="text-warning fs-5">&#9733;</span>
+              <strong><%= product.reviewSummary?.averageLabel || "0.0" %></strong>
+              <small class="text-muted">(<%= product.reviewSummary?.count || 0 %> resenas aprobadas)</small>
+            </div>
+
+            <p>
+              <strong>Disponibilidad:</strong>
+              <% if (available > 0) { %>
+                <span class="text-success"><%= available %> disponibles</span>
+              <% } else { %>
+                <span class="text-danger">Sin stock</span>
+              <% } %>
+            </p>
+
+            <% if (hasVariants) { %>
+              <p class="text-muted small">
+                Este producto se vende por opciones. Elige la presentacion adecuada antes de agregarlo al carrito.
+              </p>
+            <% } %>
+
+            <% if (available > 0) { %>
+              <form method="POST" action="<%= `${storeBasePath}/cart/add` %>">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="productId" value="<%= product.id %>">
+
+                <% if (hasVariants) { %>
+                  <div class="mb-3">
+                    <label class="form-label"><strong>Variante</strong></label>
+                    <select name="variantId" class="form-select" required>
+                      <option value="">Selecciona una opcion</option>
+                      <% variants.forEach(variant => { %>
+                        <option
+                          value="<%= variant.id %>"
+                          <%= String(selectedVariantId || "") === String(variant.id) ? "selected" : "" %>
+                          <%= variant.available <= 0 ? "disabled" : "" %>
+                        >
+                          <%= variant.name %>
+                          <% if (variant.price !== null && variant.price !== undefined) { %>
+                            - $<%= Number(variant.price).toLocaleString() %>
+                          <% } %>
+                          - <%= variant.available > 0 ? `${variant.available} disponibles` : "Sin stock" %>
+                        </option>
+                      <% }) %>
+                    </select>
+                    <div class="form-text">
+                      El precio y la disponibilidad cambian segun la opcion seleccionada.
+                    </div>
+                  </div>
+                <% } %>
+
+                <button class="btn btn-success w-100">
+                  <%= hasVariants ? "Agregar variante al carrito" : "Agregar al carrito" %>
+                </button>
+              </form>
+            <% } else { %>
+              <button class="btn btn-secondary w-100" disabled>
+                Sin stock
+              </button>
+            <% } %>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="bg-white p-4 shadow mb-4 rounded">
+  <div class="product-block mb-4">
     <h4>Descripcion del producto</h4>
     <hr>
-
     <p style="white-space: pre-line;">
       <%= product.longDescription || "Sin informacion adicional" %>
     </p>
   </div>
 
-  <div class="bg-white p-4 shadow mb-4 rounded">
+  <div class="product-block mb-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div>
         <h4 class="mb-0">Resenas y calificaciones</h4>
@@ -316,7 +462,7 @@
   </div>
 
   <% if (hasVariants) { %>
-    <div class="bg-white p-4 shadow mb-4 rounded">
+    <div class="product-block mb-4">
       <h4>Opciones disponibles</h4>
       <hr>
 
@@ -338,7 +484,7 @@
     </div>
   <% } %>
 
-  <div class="bg-white p-4 shadow rounded">
+  <div class="product-block">
     <h4>Productos relacionados</h4>
     <hr>
 
@@ -393,6 +539,15 @@
   </div>
 </div>
 
+<div id="productLightbox" class="product-lightbox" onclick="handleProductLightboxBackdrop(event)">
+  <div class="product-lightbox__dialog">
+    <button type="button" class="product-lightbox__close" onclick="closeProductLightbox()" aria-label="Cerrar imagen">
+      &times;
+    </button>
+    <img id="productLightboxImg" src="" alt="" class="product-lightbox__image">
+  </div>
+</div>
+
 <div id="reviewImageModal" class="review-image-modal" onclick="handleReviewModalBackdrop(event)">
   <div class="review-image-modal__dialog">
     <button type="button" class="review-image-modal__close" onclick="closeReviewImageModal()" aria-label="Cerrar imagen">
@@ -403,10 +558,67 @@
 </div>
 
 <script>
-  function changeImage(el) {
-    const mainImage = document.getElementById("mainImage");
-    if (mainImage) {
-      mainImage.src = el.src;
+  const galleryImages = Array.from(document.querySelectorAll("[data-gallery-image]"));
+  const galleryThumbs = Array.from(document.querySelectorAll("[data-gallery-thumb]"));
+  const galleryCounter = document.getElementById("galleryCounter");
+  let currentGalleryIndex = Math.max(galleryImages.findIndex(image => image.classList.contains("is-active")), 0);
+
+  function renderGallery() {
+    if (galleryImages.length === 0) {
+      return;
+    }
+
+    galleryImages.forEach((image, index) => {
+      image.classList.toggle("is-active", index === currentGalleryIndex);
+    });
+
+    galleryThumbs.forEach((thumb, index) => {
+      thumb.classList.toggle("is-active", index === currentGalleryIndex);
+    });
+
+    if (galleryCounter) {
+      galleryCounter.textContent = galleryImages.length > 1
+        ? `${currentGalleryIndex + 1} / ${galleryImages.length}`
+        : "1 imagen";
+    }
+  }
+
+  function setGallerySlide(index) {
+    if (galleryImages.length === 0) {
+      return;
+    }
+    currentGalleryIndex = (index + galleryImages.length) % galleryImages.length;
+    renderGallery();
+  }
+
+  function changeGallerySlide(direction) {
+    setGallerySlide(currentGalleryIndex + direction);
+  }
+
+  function openProductLightbox() {
+    if (galleryImages.length === 0) {
+      return;
+    }
+
+    const modal = document.getElementById("productLightbox");
+    const image = document.getElementById("productLightboxImg");
+    image.src = galleryImages[currentGalleryIndex].src;
+    image.alt = galleryImages[currentGalleryIndex].alt || "<%= product.name %>";
+    modal.classList.add("is-open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeProductLightbox() {
+    const modal = document.getElementById("productLightbox");
+    const image = document.getElementById("productLightboxImg");
+    modal.classList.remove("is-open");
+    image.src = "";
+    document.body.style.overflow = "";
+  }
+
+  function handleProductLightboxBackdrop(event) {
+    if (event.target.id === "productLightbox") {
+      closeProductLightbox();
     }
   }
 
@@ -435,7 +647,19 @@
 
   document.addEventListener("keydown", function(event) {
     if (event.key === "Escape") {
+      closeProductLightbox();
       closeReviewImageModal();
     }
+
+    if (galleryImages.length > 1 && !document.getElementById("productLightbox")?.classList.contains("is-open")) {
+      if (event.key === "ArrowLeft") {
+        changeGallerySlide(-1);
+      }
+      if (event.key === "ArrowRight") {
+        changeGallerySlide(1);
+      }
+    }
   });
+
+  renderGallery();
 </script>

@@ -106,7 +106,7 @@ const emptyStoreForm = {
   popupTitle: "",
   popupStartDate: "",
   popupEndDate: "",
-  popupOnlyHome: true,
+  popupOnlyHome: false,
   popupOpenInNewTab: true,
   surfaceRadius: "24",
   buttonRadius: "12",
