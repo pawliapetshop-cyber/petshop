@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <%
     const adminPrimaryColor = adminSession?.primaryColor || "#198754";
     const adminSecondaryColor = adminSession?.secondaryColor || "#212529";
@@ -60,6 +61,21 @@
       padding: 6px;
       border: 1px solid rgba(255, 255, 255, 0.18);
       box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+    }
+
+    @media (max-width: 991.98px) {
+      .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        margin-bottom: 1rem;
+        border-radius: 0 0 24px 24px;
+      }
+
+      .content {
+        margin-left: 0;
+        padding: 16px;
+      }
     }
   </style>
 </head>
