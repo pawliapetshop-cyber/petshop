@@ -96,6 +96,10 @@ const emptyStoreForm = {
   surfaceColor: "#ffffff",
   buttonPrimaryColor: "#198754",
   buttonSecondaryColor: "#212529",
+  backgroundDecorMode: "soft",
+  backgroundDecorOpacity: "18",
+  surfaceRadius: "24",
+  buttonRadius: "12",
   notificationTag: "",
   heroEyebrow: "Catalogo comercial",
   heroTitle: "",
@@ -1937,6 +1941,10 @@ exports.createStore = async (req, res) => {
     surfaceColor: (req.body.surfaceColor || "#ffffff").trim(),
     buttonPrimaryColor: (req.body.buttonPrimaryColor || req.body.primaryColor || "#198754").trim(),
     buttonSecondaryColor: (req.body.buttonSecondaryColor || req.body.secondaryColor || "#212529").trim(),
+    backgroundDecorMode: ["soft", "mesh", "none"].includes(req.body.backgroundDecorMode) ? req.body.backgroundDecorMode : "soft",
+    backgroundDecorOpacity: String(Math.min(Math.max(Number(req.body.backgroundDecorOpacity) || 18, 0), 30)),
+    surfaceRadius: String(Math.min(Math.max(Number(req.body.surfaceRadius) || 24, 12), 40)),
+    buttonRadius: String(Math.min(Math.max(Number(req.body.buttonRadius) || 12, 6), 24)),
     notificationTag: (req.body.notificationTag || "").trim().toUpperCase(),
     heroEyebrow: (req.body.heroEyebrow || "Catalogo comercial").trim(),
     heroTitle: (req.body.heroTitle || "").trim(),
@@ -1997,6 +2005,10 @@ exports.createStore = async (req, res) => {
       surfaceColor: formData.surfaceColor || "#ffffff",
       buttonPrimaryColor: formData.buttonPrimaryColor || formData.primaryColor || "#198754",
       buttonSecondaryColor: formData.buttonSecondaryColor || formData.secondaryColor || "#212529",
+      backgroundDecorMode: formData.backgroundDecorMode,
+      backgroundDecorOpacity: formData.backgroundDecorOpacity,
+      surfaceRadius: formData.surfaceRadius,
+      buttonRadius: formData.buttonRadius,
       notificationTag: formData.notificationTag || null,
       showRecommended: formData.showRecommended,
       recommendedTitle: formData.recommendedTitle || null,
@@ -2045,6 +2057,21 @@ exports.updateStore = async (req, res) => {
     surfaceColor: (req.body.surfaceColor || store.themeConfig?.surfaceColor || "#ffffff").trim(),
     buttonPrimaryColor: (req.body.buttonPrimaryColor || store.themeConfig?.buttonPrimaryColor || req.body.primaryColor || store.primaryColor || "#198754").trim(),
     buttonSecondaryColor: (req.body.buttonSecondaryColor || store.themeConfig?.buttonSecondaryColor || req.body.secondaryColor || store.secondaryColor || "#212529").trim(),
+    backgroundDecorMode: ["soft", "mesh", "none"].includes(req.body.backgroundDecorMode)
+      ? req.body.backgroundDecorMode
+      : (store.themeConfig?.backgroundDecorMode || "soft"),
+    backgroundDecorOpacity: String(Math.min(Math.max(
+      Number(req.body.backgroundDecorOpacity ?? store.themeConfig?.backgroundDecorOpacity) || 18,
+      0
+    ), 30)),
+    surfaceRadius: String(Math.min(Math.max(
+      Number(req.body.surfaceRadius ?? store.themeConfig?.surfaceRadius) || 24,
+      12
+    ), 40)),
+    buttonRadius: String(Math.min(Math.max(
+      Number(req.body.buttonRadius ?? store.themeConfig?.buttonRadius) || 12,
+      6
+    ), 24)),
     notificationTag: (req.body.notificationTag || store.themeConfig?.notificationTag || "").trim().toUpperCase(),
     heroEyebrow: (req.body.heroEyebrow || store.themeConfig?.heroEyebrow || "Catalogo comercial").trim(),
     heroTitle: (req.body.heroTitle || store.themeConfig?.heroTitle || "").trim(),
@@ -2111,6 +2138,10 @@ exports.updateStore = async (req, res) => {
       surfaceColor: formData.surfaceColor || "#ffffff",
       buttonPrimaryColor: formData.buttonPrimaryColor || formData.primaryColor || "#198754",
       buttonSecondaryColor: formData.buttonSecondaryColor || formData.secondaryColor || "#212529",
+      backgroundDecorMode: formData.backgroundDecorMode,
+      backgroundDecorOpacity: formData.backgroundDecorOpacity,
+      surfaceRadius: formData.surfaceRadius,
+      buttonRadius: formData.buttonRadius,
       notificationTag: formData.notificationTag || null,
       showRecommended: formData.showRecommended,
       recommendedTitle: formData.recommendedTitle || null,

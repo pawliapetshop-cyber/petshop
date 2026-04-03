@@ -14,7 +14,16 @@
     const surfaceColor = currentStore?.themeConfig?.surfaceColor || "#ffffff";
     const buttonPrimaryColor = currentStore?.themeConfig?.buttonPrimaryColor || primaryColor;
     const buttonSecondaryColor = currentStore?.themeConfig?.buttonSecondaryColor || secondaryColor;
+    const backgroundDecorMode = currentStore?.themeConfig?.backgroundDecorMode || "soft";
+    const backgroundDecorOpacity = Number(currentStore?.themeConfig?.backgroundDecorOpacity ?? 18);
+    const surfaceRadius = Number(currentStore?.themeConfig?.surfaceRadius ?? 24);
+    const buttonRadius = Number(currentStore?.themeConfig?.buttonRadius ?? 12);
     const storeLogo = currentStore?.logo ? `/uploads/${currentStore.logo}` : "/logo.jpeg";
+    const backgroundDecorImage = backgroundDecorMode === "mesh"
+      ? `radial-gradient(circle at left 18%, color-mix(in srgb, ${primaryColor} ${backgroundDecorOpacity}%, white) 0%, transparent 50%), radial-gradient(circle at right 14%, color-mix(in srgb, ${secondaryColor} ${Math.max(backgroundDecorOpacity - 6, 8)}%, white) 0%, transparent 42%), radial-gradient(circle at left 86%, color-mix(in srgb, ${primaryColor} ${Math.max(backgroundDecorOpacity - 10, 6)}%, white) 0%, transparent 36%)`
+      : backgroundDecorMode === "none"
+        ? "none"
+        : `radial-gradient(circle at left 16%, color-mix(in srgb, ${primaryColor} ${backgroundDecorOpacity}%, white) 0%, transparent 44%), radial-gradient(circle at right 88%, color-mix(in srgb, ${secondaryColor} ${Math.max(backgroundDecorOpacity - 8, 6)}%, white) 0%, transparent 32%)`;
   %>
 
   <title><%= currentStore?.name || "Pawlia" %></title>
@@ -31,17 +40,22 @@
       --button-primary: <%= buttonPrimaryColor %>;
       --button-secondary: <%= buttonSecondaryColor %>;
       --button-primary-soft: color-mix(in srgb, <%= buttonPrimaryColor %> 14%, white);
+      --surface-radius: <%= surfaceRadius %>px;
+      --button-radius: <%= buttonRadius %>px;
     }
 
     body {
-      background:
-        radial-gradient(circle at top left, var(--brand-primary-soft), transparent 32%),
-        var(--store-background);
+      background-color: var(--store-background);
+      background-image: <%- JSON.stringify(backgroundDecorImage) %>;
+      background-repeat: no-repeat;
+      background-size: 34rem 34rem, 28rem 28rem, 26rem 26rem;
+      background-position: -12rem 7rem, calc(100% + 8rem) 78%, -10rem calc(100% - 3rem);
+      overflow-x: hidden;
     }
 
     .ad-box {
       background: var(--store-surface);
-      border-radius: 10px;
+      border-radius: var(--surface-radius);
       padding: 10px;
       text-align: center;
       border: 1px solid #ddd;
@@ -75,6 +89,21 @@
       padding: 6px;
       border: 1px solid rgba(0, 0, 0, 0.08);
       box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .store-shell .rounded-4,
+    .store-shell .card,
+    .store-shell .form-control,
+    .store-shell .form-select {
+      border-radius: var(--surface-radius) !important;
+    }
+
+    .store-shell .btn {
+      border-radius: var(--button-radius) !important;
+    }
+
+    .store-shell .card {
+      background: var(--store-surface);
     }
 
     .btn-brand {
@@ -127,6 +156,13 @@
 
     .brand-accent {
       color: var(--brand-primary);
+    }
+
+    @media (max-width: 991.98px) {
+      body {
+        background-size: 24rem 24rem, 20rem 20rem, 16rem 16rem;
+        background-position: -11rem 6rem, calc(100% + 8rem) 82%, -9rem calc(100% - 2rem);
+      }
     }
   </style>
 </head>

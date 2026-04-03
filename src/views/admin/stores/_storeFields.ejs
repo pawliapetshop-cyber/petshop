@@ -1,0 +1,228 @@
+<%
+  const data = storeData || {};
+  const theme = data.themeConfig || {};
+  const promoSections = mode === "update" ? (theme.promoSections || []) : (data.promoSections || []);
+  const selectedCategoryIds = ((mode === "update" ? theme.featuredCategoryIds : data.featuredCategoryIds) || []).map(String);
+  const currentLogo = mode === "update" ? data.logo : data.logo;
+%>
+
+<div class="col-12">
+  <div class="store-section-card">
+    <h6>Identidad y contacto</h6>
+    <p class="store-section-hint mb-3">Datos base de la entidad y claves internas para operación diaria.</p>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Nombre</label>
+        <input type="text" name="name" class="form-control" value="<%= data.name || '' %>" placeholder="Ej. Moda Ana" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Slug</label>
+        <input type="text" name="slug" class="form-control" value="<%= data.slug || '' %>" placeholder="moda-ana" required>
+        <div class="form-text">Se usará en la URL publica: `/s/slug`.</div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Clave de notificacion</label>
+        <input type="text" name="notificationTag" class="form-control" value="<%= mode === 'update' ? (theme.notificationTag || '') : (data.notificationTag || '') %>" placeholder="PAWLIA o MODA_ANA">
+        <div class="form-text">Prefijo que aparece en correos para filtros de Gmail.</div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Correo de contacto</label>
+        <input type="email" name="contactEmail" class="form-control" value="<%= data.contactEmail || '' %>">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Telefono</label>
+        <input type="text" name="contactPhone" class="form-control" value="<%= data.contactPhone || '' %>">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">WhatsApp</label>
+        <input type="text" name="whatsapp" class="form-control" value="<%= data.whatsapp || '' %>">
+      </div>
+      <div class="col-md-3">
+        <% if (mode === "update" && currentLogo) { %>
+          <div class="mb-2">
+            <img src="/uploads/<%= currentLogo %>" alt="<%= data.name || 'Logo de tienda' %>" class="store-logo-preview">
+          </div>
+        <% } %>
+        <label class="form-label"><%= mode === "update" ? "Cambiar logo" : "Logo" %></label>
+        <input type="file" name="storeLogo" class="form-control" accept="image/*">
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="storeActive-<%= mode %>-<%= data.id || 'new' %>" name="isActive" <%= mode === "update" ? (data.isActive ? 'checked' : '') : (data.isActive !== false ? 'checked' : '') %>>
+          <label class="form-check-label" for="storeActive-<%= mode %>-<%= data.id || 'new' %>">Activa</label>
+        </div>
+      </div>
+      <% if (mode === "update") { %>
+        <div class="col-md-7 d-flex align-items-end">
+          <small class="text-muted">
+            Admins asociados: <%= data.Admins?.length || 0 %> |
+            URL publica: <a href="/s/<%= data.slug %>" target="_blank">/s/<%= data.slug %></a>
+          </small>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<div class="col-12">
+  <div class="store-section-card">
+    <h6>Personalizacion visual</h6>
+    <p class="store-section-hint mb-3">Color, fondo, radios y estilo general de la tienda.</p>
+    <div class="row g-3">
+      <div class="col-md-2">
+        <label class="form-label">Color primario</label>
+        <input type="color" name="primaryColor" class="form-control form-control-color" value="<%= data.primaryColor || '#198754' %>">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Color secundario</label>
+        <input type="color" name="secondaryColor" class="form-control form-control-color" value="<%= data.secondaryColor || '#212529' %>">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Fondo pagina</label>
+        <input type="color" name="backgroundColor" class="form-control form-control-color" value="<%= mode === 'update' ? (theme.backgroundColor || '#f5f5f5') : (data.backgroundColor || '#f5f5f5') %>">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Fondo secciones</label>
+        <input type="color" name="surfaceColor" class="form-control form-control-color" value="<%= mode === 'update' ? (theme.surfaceColor || '#ffffff') : (data.surfaceColor || '#ffffff') %>">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Boton principal</label>
+        <input type="color" name="buttonPrimaryColor" class="form-control form-control-color" value="<%= mode === 'update' ? (theme.buttonPrimaryColor || data.primaryColor || '#198754') : (data.buttonPrimaryColor || data.primaryColor || '#198754') %>">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Boton secundario</label>
+        <input type="color" name="buttonSecondaryColor" class="form-control form-control-color" value="<%= mode === 'update' ? (theme.buttonSecondaryColor || data.secondaryColor || '#212529') : (data.buttonSecondaryColor || data.secondaryColor || '#212529') %>">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Decoracion de fondo</label>
+        <select name="backgroundDecorMode" class="form-select">
+          <% visualPresets.forEach(preset => { %>
+            <% const currentMode = mode === 'update' ? (theme.backgroundDecorMode || 'soft') : (data.backgroundDecorMode || 'soft'); %>
+            <option value="<%= preset.key %>" <%= currentMode === preset.key ? 'selected' : '' %>><%= preset.label %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Intensidad del fondo</label>
+        <input type="range" name="backgroundDecorOpacity" class="form-range" min="0" max="30" step="2" value="<%= mode === 'update' ? (theme.backgroundDecorOpacity || '18') : (data.backgroundDecorOpacity || '18') %>">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Radio secciones</label>
+        <input type="number" name="surfaceRadius" class="form-control" min="12" max="40" step="2" value="<%= mode === 'update' ? (theme.surfaceRadius || '24') : (data.surfaceRadius || '24') %>">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Radio botones</label>
+        <input type="number" name="buttonRadius" class="form-control" min="6" max="24" step="2" value="<%= mode === 'update' ? (theme.buttonRadius || '12') : (data.buttonRadius || '12') %>">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="col-12">
+  <div class="store-section-card">
+    <h6>Portada y contenido comercial</h6>
+    <p class="store-section-hint mb-3">Mensajes principales y bloques visibles en la home.</p>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">Etiqueta portada</label>
+        <input type="text" name="heroEyebrow" class="form-control" value="<%= mode === 'update' ? (theme.heroEyebrow || 'Catalogo comercial') : (data.heroEyebrow || 'Catalogo comercial') %>">
+      </div>
+      <div class="col-md-5">
+        <label class="form-label">Titulo portada</label>
+        <input type="text" name="heroTitle" class="form-control" value="<%= mode === 'update' ? (theme.heroTitle || '') : (data.heroTitle || '') %>">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Subtitulo portada</label>
+        <input type="text" name="heroSubtitle" class="form-control" value="<%= mode === 'update' ? (theme.heroSubtitle || '') : (data.heroSubtitle || '') %>">
+      </div>
+      <div class="col-md-4">
+        <div class="form-check form-switch mt-4">
+          <input class="form-check-input" type="checkbox" id="showRecommended-<%= mode %>-<%= data.id || 'new' %>" name="showRecommended" <%= (mode === 'update' ? theme.showRecommended : data.showRecommended) !== false ? 'checked' : '' %>>
+          <label class="form-check-label" for="showRecommended-<%= mode %>-<%= data.id || 'new' %>">Mostrar recomendados</label>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Titulo recomendados</label>
+        <input type="text" name="recommendedTitle" class="form-control" value="<%= mode === 'update' ? (theme.recommendedTitle || '') : (data.recommendedTitle || '') %>">
+      </div>
+      <div class="col-md-4">
+        <div class="form-check form-switch mt-4">
+          <input class="form-check-input" type="checkbox" id="showNewArrivals-<%= mode %>-<%= data.id || 'new' %>" name="showNewArrivals" <%= (mode === 'update' ? theme.showNewArrivals : data.showNewArrivals) !== false ? 'checked' : '' %>>
+          <label class="form-check-label" for="showNewArrivals-<%= mode %>-<%= data.id || 'new' %>">Mostrar novedades</label>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Titulo novedades</label>
+        <input type="text" name="newArrivalsTitle" class="form-control" value="<%= mode === 'update' ? (theme.newArrivalsTitle || '') : (data.newArrivalsTitle || '') %>">
+      </div>
+      <div class="col-md-4">
+        <div class="form-check form-switch mt-4">
+          <input class="form-check-input" type="checkbox" id="showFeaturedCategories-<%= mode %>-<%= data.id || 'new' %>" name="showFeaturedCategories" <%= (mode === 'update' ? theme.showFeaturedCategories : data.showFeaturedCategories) !== false ? 'checked' : '' %>>
+          <label class="form-check-label" for="showFeaturedCategories-<%= mode %>-<%= data.id || 'new' %>">Mostrar categorias destacadas</label>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Titulo categorias destacadas</label>
+        <input type="text" name="featuredCategoriesTitle" class="form-control" value="<%= mode === 'update' ? (theme.featuredCategoriesTitle || '') : (data.featuredCategoriesTitle || '') %>">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Categorias destacadas</label>
+        <select name="featuredCategoryIds" class="form-select" multiple size="4">
+          <% categories.forEach(category => { %>
+            <option value="<%= category.id %>" <%= selectedCategoryIds.includes(String(category.id)) ? "selected" : "" %>><%= category.name %></option>
+          <% }) %>
+        </select>
+        <div class="form-text">Selecciona hasta 3 categorias para destacarlas en portada.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% [1, 2].forEach(index => { %>
+  <% const promo = promoSections[index - 1] || {}; %>
+  <div class="col-12">
+    <div class="store-section-card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h6 class="mb-1">Seccion promocional <%= index %></h6>
+          <p class="store-section-hint mb-0">Bloque editorial para campañas, lanzamientos o colecciones destacadas.</p>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="promoActive-<%= mode %>-<%= data.id || 'new' %>-<%= index %>" name="promoActive<%= index %>" <%= promo.isActive !== false ? 'checked' : '' %>>
+          <label class="form-check-label" for="promoActive-<%= mode %>-<%= data.id || 'new' %>-<%= index %>">Activa</label>
+        </div>
+      </div>
+      <div class="row g-3 align-items-end">
+        <% if (mode === 'update' && promo.image) { %>
+          <div class="col-md-2">
+            <img src="/uploads/<%= promo.image %>" alt="Promo <%= index %>" class="img-fluid store-promo-preview">
+          </div>
+        <% } %>
+        <div class="<%= mode === 'update' && promo.image ? 'col-md-2' : 'col-md-3' %>">
+          <label class="form-label">Etiqueta</label>
+          <input type="text" name="promoEyebrow<%= index %>" class="form-control" value="<%= promo.eyebrow || '' %>">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Titulo</label>
+          <input type="text" name="promoTitle<%= index %>" class="form-control" value="<%= promo.title || '' %>">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Descripcion</label>
+          <input type="text" name="promoDescription<%= index %>" class="form-control" value="<%= promo.description || '' %>">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label"><%= mode === 'update' ? 'Cambiar imagen' : 'Imagen' %></label>
+          <input type="file" name="promoImage<%= index %>" class="form-control" accept="image/*">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Texto boton</label>
+          <input type="text" name="promoButtonLabel<%= index %>" class="form-control" value="<%= promo.buttonLabel || '' %>">
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">URL del boton</label>
+          <input type="text" name="promoButtonUrl<%= index %>" class="form-control" value="<%= promo.buttonUrl || '' %>">
+        </div>
+      </div>
+    </div>
+  </div>
+<% }) %>
