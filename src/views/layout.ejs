@@ -21,6 +21,20 @@
     const surfaceRadius = Number(currentStore?.themeConfig?.surfaceRadius ?? 24);
     const buttonRadius = Number(currentStore?.themeConfig?.buttonRadius ?? 12);
     const storeLogo = currentStore?.logo ? `/uploads/${currentStore.logo}` : "/logo.jpeg";
+    const popupConfig = currentStore?.themeConfig?.popupEnabled && currentStore?.themeConfig?.popupImage
+      ? {
+          image: `/uploads/${currentStore.themeConfig.popupImage}`,
+          title: currentStore.themeConfig.popupTitle || "",
+          targetUrl: currentStore.themeConfig.popupTargetUrl || "",
+          openInNewTab: currentStore.themeConfig.popupOpenInNewTab !== false,
+          signature: [
+            currentStore.slug || "store",
+            currentStore.themeConfig.popupImage || "",
+            currentStore.themeConfig.popupTargetUrl || "",
+            currentStore.themeConfig.popupTitle || ""
+          ].join(":")
+        }
+      : null;
     const backgroundDecorImage = backgroundDecorMode === "mesh"
       ? `radial-gradient(circle at left 18%, color-mix(in srgb, ${primaryColor} ${backgroundDecorOpacity}%, white) 0%, transparent 50%), radial-gradient(circle at right 14%, color-mix(in srgb, ${secondaryColor} ${Math.max(backgroundDecorOpacity - 6, 8)}%, white) 0%, transparent 42%), radial-gradient(circle at left 86%, color-mix(in srgb, ${primaryColor} ${Math.max(backgroundDecorOpacity - 10, 6)}%, white) 0%, transparent 36%)`
       : backgroundDecorMode === "none"
@@ -177,6 +191,68 @@
       color: var(--brand-primary);
     }
 
+    .store-popup-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.58);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      z-index: 1060;
+      backdrop-filter: blur(6px);
+    }
+
+    .store-popup-backdrop.is-visible {
+      display: flex;
+    }
+
+    .store-popup-card {
+      position: relative;
+      width: min(620px, 100%);
+      border-radius: calc(var(--surface-radius) + 6px);
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
+      animation: popupEnter 180ms ease-out;
+    }
+
+    .store-popup-card img {
+      width: 100%;
+      display: block;
+      max-height: 78vh;
+      object-fit: cover;
+    }
+
+    .store-popup-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 40px;
+      height: 40px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.72);
+      color: #fff;
+      font-size: 1.1rem;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .store-popup-caption {
+      position: absolute;
+      inset: auto 0 0 0;
+      padding: 1rem 1.25rem;
+      background: linear-gradient(180deg, rgba(15,23,42,0.02), rgba(15,23,42,0.78));
+      color: #fff;
+    }
+
+    @keyframes popupEnter {
+      from { opacity: 0; transform: translateY(12px) scale(.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     @media (max-width: 991.98px) {
       body {
         background-size:
@@ -276,5 +352,71 @@
       </div>
     </div>
   </div>
+
+  <% if (popupConfig) { %>
+    <div
+      class="store-popup-backdrop"
+      id="storePromoPopup"
+      data-popup-signature="<%= popupConfig.signature %>"
+    >
+      <div class="store-popup-card">
+        <button type="button" class="store-popup-close" aria-label="Cerrar popup" data-popup-close>&times;</button>
+        <% if (popupConfig.targetUrl) { %>
+          <a
+            href="<%= popupConfig.targetUrl %>"
+            class="d-block text-decoration-none"
+            <%= /^https?:\/\//i.test(popupConfig.targetUrl) && popupConfig.openInNewTab ? 'target="_blank" rel="noopener noreferrer"' : '' %>
+          >
+            <img src="<%= popupConfig.image %>" alt="<%= popupConfig.title || 'Publicidad destacada' %>">
+            <% if (popupConfig.title) { %>
+              <div class="store-popup-caption">
+                <div class="fw-semibold"><%= popupConfig.title %></div>
+              </div>
+            <% } %>
+          </a>
+        <% } else { %>
+          <img src="<%= popupConfig.image %>" alt="<%= popupConfig.title || 'Publicidad destacada' %>">
+          <% if (popupConfig.title) { %>
+            <div class="store-popup-caption">
+              <div class="fw-semibold"><%= popupConfig.title %></div>
+            </div>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+  <% } %>
+
+  <script>
+    (() => {
+      const popup = document.getElementById("storePromoPopup");
+      if (!popup) return;
+
+      const popupKey = `store-popup-dismissed:${popup.dataset.popupSignature}`;
+      if (sessionStorage.getItem(popupKey) === "1") {
+        return;
+      }
+
+      const closePopup = () => {
+        popup.classList.remove("is-visible");
+        sessionStorage.setItem(popupKey, "1");
+      };
+
+      popup.classList.add("is-visible");
+
+      popup.addEventListener("click", (event) => {
+        if (event.target === popup) {
+          closePopup();
+        }
+      });
+
+      popup.querySelector("[data-popup-close]")?.addEventListener("click", closePopup);
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && popup.classList.contains("is-visible")) {
+          closePopup();
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

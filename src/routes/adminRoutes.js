@@ -11,6 +11,7 @@ router.use("/admin", isAdmin);
 const storeAssetsUpload = upload.fields([
   { name: "storeLogo", maxCount: 1 },
   { name: "backgroundImage", maxCount: 1 },
+  { name: "popupImage", maxCount: 1 },
   { name: "promoImage1", maxCount: 1 },
   { name: "promoImage2", maxCount: 1 }
 ]);

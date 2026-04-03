@@ -100,6 +100,11 @@ const emptyStoreForm = {
   backgroundPattern: "none",
   backgroundDecorOpacity: "18",
   backgroundImage: "",
+  popupEnabled: false,
+  popupImage: "",
+  popupTargetUrl: "",
+  popupTitle: "",
+  popupOpenInNewTab: true,
   surfaceRadius: "24",
   buttonRadius: "12",
   notificationTag: "",
@@ -1947,6 +1952,11 @@ exports.createStore = async (req, res) => {
     backgroundPattern: ["none", "dots", "grid", "diagonal"].includes(req.body.backgroundPattern) ? req.body.backgroundPattern : "none",
     backgroundDecorOpacity: String(Math.min(Math.max(Number(req.body.backgroundDecorOpacity) || 18, 0), 30)),
     backgroundImage: getUploadedFileName(req, "backgroundImage"),
+    popupEnabled: req.body.popupEnabled === "on" || req.body.popupEnabled === true,
+    popupImage: getUploadedFileName(req, "popupImage"),
+    popupTargetUrl: (req.body.popupTargetUrl || "").trim(),
+    popupTitle: (req.body.popupTitle || "").trim(),
+    popupOpenInNewTab: req.body.popupOpenInNewTab === "on" || req.body.popupOpenInNewTab === true,
     surfaceRadius: String(Math.min(Math.max(Number(req.body.surfaceRadius) || 24, 12), 40)),
     buttonRadius: String(Math.min(Math.max(Number(req.body.buttonRadius) || 12, 6), 24)),
     notificationTag: (req.body.notificationTag || "").trim().toUpperCase(),
@@ -1984,7 +1994,7 @@ exports.createStore = async (req, res) => {
   }
 
   if (errors.length > 0) {
-    removeRequestUploads(req, ["storeLogo", "backgroundImage", "promoImage1", "promoImage2"]);
+    removeRequestUploads(req, ["storeLogo", "backgroundImage", "popupImage", "promoImage1", "promoImage2"]);
     return renderStoresPage(req, res, {
       status: 400,
       errorMessages: errors,
@@ -2013,6 +2023,11 @@ exports.createStore = async (req, res) => {
       backgroundPattern: formData.backgroundPattern,
       backgroundDecorOpacity: formData.backgroundDecorOpacity,
       backgroundImage: formData.backgroundImage || null,
+      popupEnabled: formData.popupEnabled,
+      popupImage: formData.popupImage || null,
+      popupTargetUrl: formData.popupTargetUrl || null,
+      popupTitle: formData.popupTitle || null,
+      popupOpenInNewTab: formData.popupOpenInNewTab,
       surfaceRadius: formData.surfaceRadius,
       buttonRadius: formData.buttonRadius,
       notificationTag: formData.notificationTag || null,
@@ -2074,6 +2089,11 @@ exports.updateStore = async (req, res) => {
       0
     ), 30)),
     backgroundImage: getUploadedFileName(req, "backgroundImage") || store.themeConfig?.backgroundImage || "",
+    popupEnabled: req.body.popupEnabled === "on" || req.body.popupEnabled === true,
+    popupImage: getUploadedFileName(req, "popupImage") || store.themeConfig?.popupImage || "",
+    popupTargetUrl: (req.body.popupTargetUrl || store.themeConfig?.popupTargetUrl || "").trim(),
+    popupTitle: (req.body.popupTitle || store.themeConfig?.popupTitle || "").trim(),
+    popupOpenInNewTab: req.body.popupOpenInNewTab === "on" || req.body.popupOpenInNewTab === true,
     surfaceRadius: String(Math.min(Math.max(
       Number(req.body.surfaceRadius ?? store.themeConfig?.surfaceRadius) || 24,
       12
@@ -2119,7 +2139,7 @@ exports.updateStore = async (req, res) => {
   }
 
   if (errors.length > 0) {
-    removeRequestUploads(req, ["storeLogo", "backgroundImage", "promoImage1", "promoImage2"]);
+    removeRequestUploads(req, ["storeLogo", "backgroundImage", "popupImage", "promoImage1", "promoImage2"]);
     setFlash(req, "error", errors[0]);
     return res.redirect("/admin/stores");
   }
@@ -2130,6 +2150,10 @@ exports.updateStore = async (req, res) => {
 
   if (getUploadedFileName(req, "backgroundImage") && store.themeConfig?.backgroundImage && store.themeConfig.backgroundImage !== formData.backgroundImage) {
     removeUploadedAsset(store.themeConfig.backgroundImage);
+  }
+
+  if (getUploadedFileName(req, "popupImage") && store.themeConfig?.popupImage && store.themeConfig.popupImage !== formData.popupImage) {
+    removeUploadedAsset(store.themeConfig.popupImage);
   }
 
   removeReplacedPromoImages(existingPromoSections, formData.promoSections);
@@ -2156,6 +2180,11 @@ exports.updateStore = async (req, res) => {
       backgroundPattern: formData.backgroundPattern,
       backgroundDecorOpacity: formData.backgroundDecorOpacity,
       backgroundImage: formData.backgroundImage || null,
+      popupEnabled: formData.popupEnabled,
+      popupImage: formData.popupImage || null,
+      popupTargetUrl: formData.popupTargetUrl || null,
+      popupTitle: formData.popupTitle || null,
+      popupOpenInNewTab: formData.popupOpenInNewTab,
       surfaceRadius: formData.surfaceRadius,
       buttonRadius: formData.buttonRadius,
       notificationTag: formData.notificationTag || null,
