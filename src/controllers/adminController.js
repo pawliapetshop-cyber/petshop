@@ -50,6 +50,11 @@ const emptyProductForm = {
   description: "",
   longDescription: "",
   price: "",
+  discountType: "none",
+  discountValue: 0,
+  discountLabel: "",
+  discountStartDate: "",
+  discountEndDate: "",
   stock: "",
   lowStockThreshold: "",
   isActive: true,
@@ -757,6 +762,11 @@ const normalizeProductInput = (body = {}) => ({
   description: (body.description || "").trim(),
   longDescription: (body.longDescription || "").trim(),
   price: body.price ?? "",
+  discountType: ["none", "percent", "fixed"].includes(body.discountType) ? body.discountType : "none",
+  discountValue: body.discountValue ?? 0,
+  discountLabel: (body.discountLabel || "").trim(),
+  discountStartDate: body.discountStartDate || "",
+  discountEndDate: body.discountEndDate || "",
   stock: body.stock ?? "",
   lowStockThreshold: body.lowStockThreshold ?? "",
   isActive: body.isActive === "on" || body.isActive === true,
@@ -1070,6 +1080,7 @@ const renderCustomersPage = async (req, res, options = {}) => {
 const validateProductInput = async (formData, options = {}) => {
   const errors = [];
   const price = Number(formData.price);
+  const discountValue = Number(formData.discountValue);
   const stock = Number(formData.stock);
   const lowStockThreshold = Number(formData.lowStockThreshold);
   const existingVariantMap = new Map(
@@ -1082,6 +1093,17 @@ const validateProductInput = async (formData, options = {}) => {
   if (!formData.description) errors.push("La descripcion corta es obligatoria.");
   if (formData.price === "" || Number.isNaN(price) || price < 0) {
     errors.push("El precio debe ser un numero mayor o igual a 0.");
+  }
+  if (formData.discountType !== "none") {
+    if (Number.isNaN(discountValue) || discountValue <= 0) {
+      errors.push("El descuento debe ser un numero mayor a 0.");
+    }
+    if (formData.discountType === "percent" && discountValue > 100) {
+      errors.push("El descuento porcentual no puede ser mayor al 100%.");
+    }
+  }
+  if (formData.discountStartDate && formData.discountEndDate && formData.discountStartDate > formData.discountEndDate) {
+    errors.push("La fecha de inicio del descuento no puede ser posterior a la fecha final.");
   }
   if (formData.lowStockThreshold === "" || !Number.isInteger(lowStockThreshold) || lowStockThreshold < 0) {
     errors.push("El umbral de bajo stock debe ser un numero entero mayor o igual a 0.");
@@ -1152,6 +1174,11 @@ const validateProductInput = async (formData, options = {}) => {
       description: formData.description,
       longDescription: formData.longDescription,
       price: Number.isNaN(price) ? formData.price : price,
+      discountType: formData.discountType,
+      discountValue: formData.discountType === "none" ? 0 : (Number.isNaN(discountValue) ? formData.discountValue : discountValue),
+      discountLabel: formData.discountLabel,
+      discountStartDate: formData.discountStartDate || null,
+      discountEndDate: formData.discountEndDate || null,
       stock: hasVariants
         ? variantInventory.stock
         : (Number.isNaN(stock) ? formData.stock : stock),
@@ -1198,6 +1225,11 @@ const renderEditProductForm = async (res, productId, options = {}) => {
       description: product.description,
       longDescription: product.longDescription || "",
       price: product.price,
+      discountType: product.discountType || "none",
+      discountValue: product.discountValue || 0,
+      discountLabel: product.discountLabel || "",
+      discountStartDate: product.discountStartDate || "",
+      discountEndDate: product.discountEndDate || "",
       stock: product.stock,
       lowStockThreshold: product.lowStockThreshold,
       isActive: product.isActive,
@@ -2659,6 +2691,11 @@ exports.createProduct = async (req, res) => {
       description: values.description,
       longDescription: values.longDescription || null,
       price: values.price,
+      discountType: values.discountType,
+      discountValue: values.discountValue,
+      discountLabel: values.discountLabel || null,
+      discountStartDate: values.discountStartDate,
+      discountEndDate: values.discountEndDate,
       stock: values.stock,
       reservedStock: values.reservedStock || 0,
       lowStockThreshold: values.lowStockThreshold,
@@ -2821,6 +2858,11 @@ exports.updateProduct = async (req, res) => {
         description: values.description,
         longDescription: values.longDescription || null,
         price: values.price,
+        discountType: values.discountType,
+        discountValue: values.discountValue,
+        discountLabel: values.discountLabel || null,
+        discountStartDate: values.discountStartDate,
+        discountEndDate: values.discountEndDate,
         stock: values.stock,
         reservedStock: values.reservedStock ?? product.reservedStock,
         lowStockThreshold: values.lowStockThreshold,

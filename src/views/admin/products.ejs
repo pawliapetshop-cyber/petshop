@@ -107,7 +107,16 @@
             <div><small class="text-warning">Alertas en variantes: <%= lowVariants.length %></small></div>
           <% } %>
         </td>
-        <td>$<%= p.price %></td>
+        <td>
+          $<%= Number(p.price).toLocaleString("es-CO") %>
+          <% if (p.discountType && p.discountType !== "none" && Number(p.discountValue || 0) > 0) { %>
+            <div>
+              <span class="badge bg-danger">
+                <%= p.discountType === "percent" ? `-${p.discountValue}%` : `-$${Number(p.discountValue).toLocaleString("es-CO")}` %>
+              </span>
+            </div>
+          <% } %>
+        </td>
         <td><%= p.Category?.name %></td>
         <td>
           <strong><%= available %></strong>

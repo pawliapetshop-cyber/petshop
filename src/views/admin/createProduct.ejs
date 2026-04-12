@@ -66,6 +66,50 @@
     >
   </div>
 
+  <div class="border rounded p-3 mb-3 bg-light">
+    <h5 class="mb-3">Descuento directo</h5>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">Tipo</label>
+        <select name="discountType" class="form-select">
+          <option value="none" <%= (formData?.discountType || 'none') === 'none' ? 'selected' : '' %>>Sin descuento</option>
+          <option value="percent" <%= formData?.discountType === 'percent' ? 'selected' : '' %>>Porcentaje</option>
+          <option value="fixed" <%= formData?.discountType === 'fixed' ? 'selected' : '' %>>Valor fijo</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Valor</label>
+        <input
+          name="discountValue"
+          type="number"
+          min="0"
+          step="0.01"
+          class="form-control"
+          value="<%= formData?.discountValue ?? 0 %>"
+          placeholder="Ej: 20"
+        >
+        <div class="form-text">% o pesos segun el tipo.</div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Inicio</label>
+        <input type="date" name="discountStartDate" class="form-control" value="<%= formData?.discountStartDate || '' %>">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Fin</label>
+        <input type="date" name="discountEndDate" class="form-control" value="<%= formData?.discountEndDate || '' %>">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Etiqueta opcional</label>
+        <input
+          name="discountLabel"
+          class="form-control"
+          value="<%= formData?.discountLabel || '' %>"
+          placeholder="Ej: Liquidacion, Oferta de temporada"
+        >
+      </div>
+    </div>
+  </div>
+
   <div class="mb-3">
     <label>Stock base</label>
     <input

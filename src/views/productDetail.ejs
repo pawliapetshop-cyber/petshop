@@ -281,9 +281,21 @@
               <% if (product.pricingSummary?.hasPriceRange) { %>
                 Desde $<%= Number(product.pricingSummary.effectiveMinPrice).toLocaleString() %>
               <% } else { %>
-                $<%= Number(product.price).toLocaleString() %>
+                $<%= Number(product.pricingSummary?.baseFinalPrice ?? product.price).toLocaleString() %>
               <% } %>
             </h2>
+
+            <% if (product.pricingSummary?.hasDiscount) { %>
+              <div class="mb-2">
+                <span class="badge bg-danger">-<%= product.pricingSummary.discountPercent %>%</span>
+                <span class="text-muted text-decoration-line-through ms-2">
+                  Antes $<%= Number(product.pricingSummary.baseOriginalPrice).toLocaleString() %>
+                </span>
+                <% if (product.pricingSummary.discountLabel) { %>
+                  <span class="text-muted ms-2"><%= product.pricingSummary.discountLabel %></span>
+                <% } %>
+              </div>
+            <% } %>
 
             <% if (product.pricingSummary?.hasPriceRange) { %>
               <p class="text-muted mb-2">
@@ -331,9 +343,7 @@
                           <%= variant.available <= 0 ? "disabled" : "" %>
                         >
                           <%= variant.name %>
-                          <% if (variant.price !== null && variant.price !== undefined) { %>
-                            - $<%= Number(variant.price).toLocaleString() %>
-                          <% } %>
+                          - $<%= Number(variant.finalPrice ?? variant.price ?? product.price).toLocaleString() %>
                           - <%= variant.available > 0 ? `${variant.available} disponibles` : "Sin stock" %>
                         </option>
                       <% }) %>
@@ -472,8 +482,13 @@
             <div class="border rounded p-3 h-100">
               <strong><%= variant.name %></strong>
               <div class="text-success mt-2">
-                $<%= Number(variant.price ?? product.price).toLocaleString() %>
+                $<%= Number(variant.finalPrice ?? variant.price ?? product.price).toLocaleString() %>
               </div>
+              <% if (variant.hasDiscount) { %>
+                <small class="text-muted text-decoration-line-through">
+                  $<%= Number(variant.originalPrice ?? variant.price ?? product.price).toLocaleString() %>
+                </small>
+              <% } %>
               <small class="<%= variant.available > 0 ? 'text-muted' : 'text-danger' %>">
                 <%= variant.available > 0 ? `${variant.available} disponibles` : "Sin stock" %>
               </small>
@@ -518,7 +533,7 @@
                 <% if (r.pricingSummary?.hasPriceRange) { %>
                   Desde $<%= Number(r.pricingSummary.effectiveMinPrice).toLocaleString() %>
                 <% } else { %>
-                  $<%= Number(r.price).toLocaleString() %>
+                  $<%= Number(r.pricingSummary?.baseFinalPrice ?? r.price).toLocaleString() %>
                 <% } %>
               </h6>
 

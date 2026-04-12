@@ -40,6 +40,28 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true
+    },
+    discountType: {
+      type: DataTypes.ENUM("none", "percent", "fixed"),
+      allowNull: false,
+      defaultValue: "none"
+    },
+    discountValue: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0
+    },
+    discountLabel: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    discountStartDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
+    },
+    discountEndDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
     }
   });
 };

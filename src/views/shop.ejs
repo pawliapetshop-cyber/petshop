@@ -488,6 +488,9 @@
                   <% if (lowStock) { %>
                     <span class="badge bg-warning text-dark">Ultimas unidades</span>
                   <% } %>
+                  <% if (product.pricingSummary?.hasDiscount) { %>
+                    <span class="badge bg-danger">-<%= product.pricingSummary.discountPercent %>%</span>
+                  <% } %>
                 </div>
                 <% if (hasVariants) { %>
                   <span class="badge bg-dark position-absolute bottom-0 start-0 m-2">Variantes</span>
@@ -517,13 +520,23 @@
                     <div class="text-success fw-bold">
                       Desde $<%= Number(product.pricingSummary.effectiveMinPrice).toLocaleString() %>
                     </div>
+                    <% if (product.pricingSummary?.hasDiscount) { %>
+                      <small class="text-muted text-decoration-line-through">
+                        Antes desde $<%= Number(product.pricingSummary.originalMinPrice).toLocaleString() %>
+                      </small>
+                    <% } %>
                     <small class="text-muted">
                       Hasta $<%= Number(product.pricingSummary.effectiveMaxPrice).toLocaleString() %>
                     </small>
                   <% } else { %>
                     <div class="text-success fw-bold">
-                      $<%= Number(product.pricingSummary?.basePrice || product.price).toLocaleString() %>
+                      $<%= Number(product.pricingSummary?.baseFinalPrice ?? product.pricingSummary?.basePrice ?? product.price).toLocaleString() %>
                     </div>
+                    <% if (product.pricingSummary?.hasDiscount) { %>
+                      <small class="text-muted text-decoration-line-through">
+                        Antes $<%= Number(product.pricingSummary.baseOriginalPrice).toLocaleString() %>
+                      </small>
+                    <% } %>
                   <% } %>
                 </div>
 

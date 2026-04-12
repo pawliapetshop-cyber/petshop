@@ -93,7 +93,13 @@
               </button>
             </form>
           </td>
-          <td>$<%= Number(item.price).toLocaleString("es-CO") %></td>
+          <td>
+            $<%= Number(item.price).toLocaleString("es-CO") %>
+            <% if (Number(item.discountPercent || 0) > 0) { %>
+              <div><small class="text-danger">-<%= item.discountPercent %>%</small></div>
+              <small class="text-muted text-decoration-line-through">$<%= Number(item.originalPrice || item.price).toLocaleString("es-CO") %></small>
+            <% } %>
+          </td>
           <td>$<%= Number(item.price * item.quantity).toLocaleString("es-CO") %></td>
           <td>
             <a href="<%= `${storeBasePath}/cart/remove/${item.cartKey}` %>" class="btn btn-danger btn-sm">
@@ -124,6 +130,10 @@
           <div>
             <small class="text-muted d-block">Precio</small>
             <strong>$<%= Number(item.price).toLocaleString("es-CO") %></strong>
+            <% if (Number(item.discountPercent || 0) > 0) { %>
+              <span class="badge bg-danger ms-1">-<%= item.discountPercent %>%</span>
+              <small class="text-muted text-decoration-line-through d-block">$<%= Number(item.originalPrice || item.price).toLocaleString("es-CO") %></small>
+            <% } %>
           </div>
           <div class="text-end">
             <small class="text-muted d-block">Subtotal</small>

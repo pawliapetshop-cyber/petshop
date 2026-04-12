@@ -24,6 +24,7 @@ const {
   notifyNewOrder,
   notifyLowStock
 } = require("../utils/notifications");
+const { getDiscountedPrice } = require("../utils/productPricing");
 
 const emptyCheckoutForm = {
   name: "",
@@ -260,10 +261,18 @@ const getProductInventory = (product) => {
   const variants = (product.ProductVariants || []).map((variant) => {
     const stock = Number(variant.stock) || 0;
     const reservedStock = Number(variant.reservedStock) || 0;
+    const originalPrice = variant.price === null || variant.price === undefined
+      ? Number(product.price) || 0
+      : Number(variant.price);
+    const pricing = getDiscountedPrice(originalPrice, product);
     return {
       id: variant.id,
       name: variant.name,
       price: variant.price,
+      originalPrice: pricing.originalPrice,
+      finalPrice: pricing.finalPrice,
+      discountPercent: pricing.discountPercent,
+      hasDiscount: pricing.hasDiscount,
       stock,
       reservedStock,
       available: stock - reservedStock
@@ -295,6 +304,8 @@ const getProductInventory = (product) => {
   };
 };
 
+const buildLinePricing = (product, originalPrice) => getDiscountedPrice(originalPrice, product);
+
 const decorateProduct = (product) => {
   if (!product) {
     return product;
@@ -308,14 +319,28 @@ const decorateProduct = (product) => {
     .filter((price) => !Number.isNaN(price));
 
   const basePrice = Number(product.price) || 0;
-  const effectiveMinPrice = variantPrices.length > 0 ? Math.min(...variantPrices, basePrice) : basePrice;
-  const effectiveMaxPrice = variantPrices.length > 0 ? Math.max(...variantPrices, basePrice) : basePrice;
+  const originalPrices = variantPrices.length > 0 ? [...variantPrices, basePrice] : [basePrice];
+  const pricingOptions = originalPrices.map((price) => buildLinePricing(product, price));
+  const finalPrices = pricingOptions.map((pricing) => pricing.finalPrice);
+  const originalMinPrice = Math.min(...originalPrices);
+  const originalMaxPrice = Math.max(...originalPrices);
+  const effectiveMinPrice = Math.min(...finalPrices);
+  const effectiveMaxPrice = Math.max(...finalPrices);
+  const basePricing = buildLinePricing(product, basePrice);
+  const maxDiscountPercent = Math.max(...pricingOptions.map((pricing) => pricing.discountPercent || 0));
 
   product.pricingSummary = {
     basePrice,
+    originalMinPrice,
+    originalMaxPrice,
     effectiveMinPrice,
     effectiveMaxPrice,
-    hasPriceRange: effectiveMinPrice !== effectiveMaxPrice
+    hasPriceRange: effectiveMinPrice !== effectiveMaxPrice,
+    hasDiscount: pricingOptions.some((pricing) => pricing.hasDiscount),
+    discountPercent: maxDiscountPercent,
+    discountLabel: basePricing.discountLabel,
+    baseOriginalPrice: basePricing.originalPrice,
+    baseFinalPrice: basePricing.finalPrice
   };
 
   const createdAt = product.createdAt ? new Date(product.createdAt) : null;
@@ -802,12 +827,18 @@ exports.addToCart = async (req, res) => {
   }
 
   const variantPrice = selectedVariant?.price;
-  const itemPrice = variantPrice === null || variantPrice === undefined
+  const originalItemPrice = variantPrice === null || variantPrice === undefined
     ? product.price
     : Number(variantPrice);
+  const itemPricing = buildLinePricing(product, originalItemPrice);
+  const itemPrice = itemPricing.finalPrice;
 
   if (existing) {
     existing.quantity++;
+    existing.price = itemPrice;
+    existing.originalPrice = itemPricing.originalPrice;
+    existing.discountAmount = itemPricing.discountAmount;
+    existing.discountPercent = itemPricing.discountPercent;
   } else {
     cart.push({
       cartKey,
@@ -818,6 +849,9 @@ exports.addToCart = async (req, res) => {
       name: product.name,
       variantName: selectedVariant?.name || null,
       price: itemPrice,
+      originalPrice: itemPricing.originalPrice,
+      discountAmount: itemPricing.discountAmount,
+      discountPercent: itemPricing.discountPercent,
       image: getMainImage(product),
       quantity: 1
     });
@@ -882,12 +916,21 @@ exports.updateCartItem = async (req, res) => {
 
     available = (Number(variant.stock) || 0) - (Number(variant.reservedStock) || 0);
     item.variantName = variant.name;
-    item.price = variant.price === null || variant.price === undefined
+    const originalPrice = variant.price === null || variant.price === undefined
       ? product.price
       : Number(variant.price);
+    const pricing = buildLinePricing(product, originalPrice);
+    item.price = pricing.finalPrice;
+    item.originalPrice = pricing.originalPrice;
+    item.discountAmount = pricing.discountAmount;
+    item.discountPercent = pricing.discountPercent;
     itemLabel = `${product.name} (${variant.name})`;
   } else {
-    item.price = product.price;
+    const pricing = buildLinePricing(product, product.price);
+    item.price = pricing.finalPrice;
+    item.originalPrice = pricing.originalPrice;
+    item.discountAmount = pricing.discountAmount;
+    item.discountPercent = pricing.discountPercent;
   }
 
   item.name = product.name;
@@ -1075,6 +1118,9 @@ exports.processCheckout = async (req, res) => {
         let variant = null;
         let available = (Number(product.stock) || 0) - (Number(product.reservedStock) || 0);
         let price = item.price;
+        let originalPrice = item.originalPrice || item.price;
+        let discountPercent = item.discountPercent || 0;
+        let discountAmount = item.discountAmount || 0;
         let variantName = null;
 
         if (item.variantId) {
@@ -1088,10 +1134,20 @@ exports.processCheckout = async (req, res) => {
           }
 
           available = (Number(variant.stock) || 0) - (Number(variant.reservedStock) || 0);
-          price = variant.price === null || variant.price === undefined
+          originalPrice = variant.price === null || variant.price === undefined
             ? product.price
             : Number(variant.price);
+          const pricing = buildLinePricing(product, originalPrice);
+          price = pricing.finalPrice;
+          discountPercent = pricing.discountPercent;
+          discountAmount = pricing.discountAmount;
           variantName = variant.name;
+        } else {
+          const pricing = buildLinePricing(product, product.price);
+          price = pricing.finalPrice;
+          originalPrice = pricing.originalPrice;
+          discountPercent = pricing.discountPercent;
+          discountAmount = pricing.discountAmount;
         }
 
         if (available < item.quantity) {
@@ -1125,11 +1181,17 @@ exports.processCheckout = async (req, res) => {
             longDescription: product.longDescription,
             image: mainImage,
             price,
+            originalPrice,
+            discountAmount,
+            discountPercent,
             variant: variant
               ? {
                 id: variant.id,
                 name: variant.name,
-                price
+                price,
+                originalPrice,
+                discountAmount,
+                discountPercent
               }
               : null
           }
