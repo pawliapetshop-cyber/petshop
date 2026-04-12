@@ -1,3 +1,40 @@
+<style>
+  .cart-mobile-list {
+    display: none;
+  }
+
+  @media (max-width: 767.98px) {
+    .cart-desktop-table {
+      display: none;
+    }
+
+    .cart-mobile-list {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .cart-mobile-card {
+      background: var(--store-surface, #fff);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 22px;
+      padding: 1rem;
+      box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+    }
+
+    .cart-mobile-card .quantity-input {
+      max-width: 86px;
+      text-align: center;
+    }
+
+    .cart-actions {
+      display: grid !important;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      text-align: center;
+    }
+  }
+</style>
+
 <h2 class="mb-4">Tu carrito</h2>
 
 <% if (errorMessage) { %>
@@ -20,7 +57,7 @@
 <% let total = 0; %>
 
 <% if (cart.length > 0) { %>
-  <table class="table table-bordered bg-white shadow">
+  <table class="table table-bordered bg-white shadow cart-desktop-table">
     <thead class="table-dark">
       <tr>
         <th>Producto</th>
@@ -68,7 +105,53 @@
     </tbody>
   </table>
 
-  <div class="d-flex justify-content-between align-items-center mt-4">
+  <div class="cart-mobile-list">
+    <% cart.forEach(item => { %>
+      <article class="cart-mobile-card">
+        <div class="d-flex justify-content-between gap-3 mb-3">
+          <div>
+            <h5 class="mb-1"><%= item.name %></h5>
+            <% if (item.variantName) { %>
+              <small class="text-muted d-block">Variante: <%= item.variantName %></small>
+            <% } %>
+          </div>
+          <a href="<%= `${storeBasePath}/cart/remove/${item.cartKey}` %>" class="btn btn-outline-danger btn-sm align-self-start">
+            Eliminar
+          </a>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <small class="text-muted d-block">Precio</small>
+            <strong>$<%= Number(item.price).toLocaleString("es-CO") %></strong>
+          </div>
+          <div class="text-end">
+            <small class="text-muted d-block">Subtotal</small>
+            <strong>$<%= Number(item.price * item.quantity).toLocaleString("es-CO") %></strong>
+          </div>
+        </div>
+
+        <form method="POST" action="<%= `${storeBasePath}/cart/update/${item.cartKey}` %>" class="d-flex align-items-center gap-2">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label class="form-label mb-0 small text-muted" for="mobile-qty-<%= item.cartKey %>">Cantidad</label>
+          <input
+            id="mobile-qty-<%= item.cartKey %>"
+            type="number"
+            name="quantity"
+            min="1"
+            step="1"
+            value="<%= item.quantity %>"
+            class="form-control form-control-sm quantity-input"
+          >
+          <button type="submit" class="btn btn-outline-primary btn-sm ms-auto">
+            Actualizar
+          </button>
+        </form>
+      </article>
+    <% }) %>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mt-4 cart-actions">
     <a href="<%= storeBasePath %>" class="btn btn-outline-secondary">
       Seguir comprando
     </a>

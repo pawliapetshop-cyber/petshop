@@ -27,9 +27,9 @@
     const popupEndDate = currentStore?.themeConfig?.popupEndDate || "";
     const todayDate = new Date().toISOString().slice(0, 10);
     const popupScheduled = (!popupStartDate || popupStartDate <= todayDate) && (!popupEndDate || popupEndDate >= todayDate);
-    const popupMatchesPath = currentStore?.themeConfig?.popupOnlyHome === false
-      ? true
-      : (currentRoutePath === currentStoreBasePath || currentRoutePath === `${currentStoreBasePath}/`);
+    const popupMatchesPath = currentStore?.themeConfig?.popupOnlyHome === true
+      ? (currentRoutePath === currentStoreBasePath || currentRoutePath === `${currentStoreBasePath}/`)
+      : true;
     const popupConfig = currentStore?.themeConfig?.popupEnabled && currentStore?.themeConfig?.popupImage && popupScheduled && popupMatchesPath
       ? {
           image: `/uploads/${currentStore.themeConfig.popupImage}`,
@@ -43,7 +43,7 @@
             currentStore.themeConfig.popupTitle || "",
             popupStartDate,
             popupEndDate,
-            currentStore.themeConfig.popupOnlyHome === false ? "all-pages" : "home-only"
+            currentStore.themeConfig.popupOnlyHome === true ? "home-only" : "all-pages"
           ].join(":")
         }
       : null;
@@ -206,7 +206,7 @@
     .store-popup-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.58);
+      background: rgba(15, 23, 42, 0.66);
       display: none;
       align-items: center;
       justify-content: center;
@@ -221,18 +221,18 @@
 
     .store-popup-card {
       position: relative;
-      width: min(620px, 100%);
-      border-radius: calc(var(--surface-radius) + 6px);
+      width: min(460px, 100%);
+      border-radius: 28px;
       overflow: hidden;
       background: #fff;
       box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
-      animation: popupEnter 180ms ease-out;
+      animation: popupEnter 220ms ease-out;
     }
 
     .store-popup-card img {
       width: 100%;
       display: block;
-      max-height: 78vh;
+      max-height: 72vh;
       object-fit: cover;
     }
 
@@ -258,6 +258,10 @@
       padding: 1rem 1.25rem;
       background: linear-gradient(180deg, rgba(15,23,42,0.02), rgba(15,23,42,0.78));
       color: #fff;
+    }
+
+    .store-popup-card a {
+      cursor: pointer;
     }
 
     @keyframes popupEnter {
@@ -291,11 +295,11 @@
       }
 
       .store-popup-card {
-        width: min(100%, 420px);
+        width: min(100%, 360px);
       }
 
       .store-popup-card img {
-        max-height: 70vh;
+        max-height: 68vh;
       }
     }
   </style>
@@ -424,17 +428,11 @@
       const popup = document.getElementById("storePromoPopup");
       if (!popup) return;
 
-      const popupKey = `store-popup-dismissed:${popup.dataset.popupSignature}`;
-      if (sessionStorage.getItem(popupKey) === "1") {
-        return;
-      }
-
       const closePopup = () => {
         popup.classList.remove("is-visible");
-        sessionStorage.setItem(popupKey, "1");
       };
 
-      popup.classList.add("is-visible");
+      requestAnimationFrame(() => popup.classList.add("is-visible"));
 
       popup.addEventListener("click", (event) => {
         if (event.target === popup) {

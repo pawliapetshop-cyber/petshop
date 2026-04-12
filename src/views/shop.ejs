@@ -1,6 +1,18 @@
 <div class="mt-4">
   <style>
     @media (max-width: 767.98px) {
+      .mobile-filter-toggle {
+        display: flex;
+      }
+
+      .mobile-filter-panel {
+        display: none;
+      }
+
+      .mobile-filter-panel.is-open {
+        display: block;
+      }
+
       .mobile-product-grid {
         --bs-gutter-x: 0.85rem;
       }
@@ -38,6 +50,18 @@
 
       .store-product-card .badge {
         font-size: 0.65rem;
+      }
+
+      .store-product-card .product-badge-strip {
+        inset: 0 0 auto 0;
+        padding: 0.45rem;
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0));
+      }
+    }
+
+    @media (min-width: 768px) {
+      .mobile-filter-toggle {
+        display: none;
       }
     }
   </style>
@@ -291,8 +315,21 @@
 
   <div class="row g-4">
     <div class="col-lg-3">
-      <div class="bg-white p-3 rounded-4 shadow-sm">
-        <h5 class="mb-3">Filtros</h5>
+      <button
+        type="button"
+        class="btn btn-outline-success w-100 mb-3 mobile-filter-toggle align-items-center justify-content-between"
+        data-mobile-filter-toggle
+        aria-expanded="false"
+      >
+        <span>Filtros y busqueda</span>
+        <span aria-hidden="true">⌄</span>
+      </button>
+
+      <div class="bg-white p-3 rounded-4 shadow-sm mobile-filter-panel" data-mobile-filter-panel>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">Filtros</h5>
+          <small class="text-muted d-md-none">Toca para ajustar</small>
+        </div>
 
         <form method="GET" action="<%= storeBasePath %>">
           <div class="mb-3">
@@ -441,19 +478,19 @@
           <div class="col-6 col-md-6 col-xl-4 mb-4">
             <div class="card store-product-card border-0 shadow-sm h-100 overflow-hidden">
               <div class="position-relative">
-                <div class="position-absolute top-0 start-0 m-3 d-flex gap-2 flex-wrap" style="z-index: 2;">
+                <div class="position-absolute top-0 start-0 end-0 m-2 d-flex gap-1 flex-wrap product-badge-strip" style="z-index: 2;">
                   <% if (product.marketingSummary?.isNew) { %>
                     <span class="badge bg-success">Nuevo</span>
                   <% } %>
                   <% if (product.marketingSummary?.isRecommended) { %>
                     <span class="badge bg-info text-dark">Destacado</span>
                   <% } %>
+                  <% if (lowStock) { %>
+                    <span class="badge bg-warning text-dark">Ultimas unidades</span>
+                  <% } %>
                 </div>
                 <% if (hasVariants) { %>
-                  <span class="badge bg-dark position-absolute bottom-0 start-0 m-3">Variantes</span>
-                <% } %>
-                <% if (lowStock) { %>
-                  <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-3">Ultimas unidades</span>
+                  <span class="badge bg-dark position-absolute bottom-0 start-0 m-2">Variantes</span>
                 <% } %>
 
                 <a href="<%= `${storeBasePath}/producto/${product.id}` %>" style="text-decoration:none;">
@@ -522,3 +559,16 @@
     </div>
   </div>
 </div>
+
+<script>
+  (() => {
+    const toggle = document.querySelector("[data-mobile-filter-toggle]");
+    const panel = document.querySelector("[data-mobile-filter-panel]");
+    if (!toggle || !panel) return;
+
+    toggle.addEventListener("click", () => {
+      const isOpen = panel.classList.toggle("is-open");
+      toggle.setAttribute("aria-expanded", String(isOpen));
+    });
+  })();
+</script>
