@@ -27,8 +27,8 @@ const {
 } = require("../utils/orderStatus");
 const {
   getStoreShippingConfig,
-  getShippingCities,
-  buildDefaultShippingConfig
+  buildDefaultShippingConfig,
+  normalizeCityKey
 } = require("../utils/shippingConfig");
 const {
   DEFAULT_NOTIFICATION_CONFIG,
@@ -2277,35 +2277,67 @@ exports.updateShippingSettings = async (req, res) => {
     return res.redirect("/admin");
   }
 
-  const shippingCities = getShippingCities().map((city) => {
-    const rawCost = req.body[`shippingCost_${city.key}`];
-    const chargeShipping = req.body[`chargeShipping_${city.key}`] === "on";
-    const allowCashOnDelivery = req.body[`allowCashOnDelivery_${city.key}`] === "on";
+  const rawCities = Array.isArray(req.body.cities)
+    ? req.body.cities
+    : Object.values(req.body.cities || {});
+  const shippingCities = [];
+  const seenKeys = new Set();
+  const errors = [];
+
+  for (let index = 0; index < rawCities.length; index++) {
+    const city = rawCities[index] || {};
+    const label = (city.label || "").toString().trim();
+    const key = normalizeCityKey(city.key || label);
+    const rawCost = city.cost;
+    const isActive = Boolean(city.isActive);
+    const chargeShipping = Boolean(city.chargeShipping);
+    const allowCashOnDelivery = Boolean(city.allowCashOnDelivery);
     const parsedCost = Number(rawCost);
 
-    return {
-      key: city.key,
-      label: city.label,
+    if (!label && !key) {
+      continue;
+    }
+
+    if (!label) {
+      errors.push("Cada ciudad debe tener un nombre.");
+      continue;
+    }
+
+    if (!key) {
+      errors.push(`No se pudo generar una clave valida para ${label}.`);
+      continue;
+    }
+
+    if (seenKeys.has(key)) {
+      errors.push(`La ciudad ${label} esta repetida.`);
+      continue;
+    }
+
+    if (chargeShipping && (rawCost === undefined || rawCost === "" || !Number.isFinite(parsedCost) || parsedCost < 0)) {
+      errors.push(`El costo de envio para ${label} debe ser un numero mayor o igual a 0.`);
+      continue;
+    }
+
+    seenKeys.add(key);
+    shippingCities.push({
+      key,
+      label,
+      isActive,
       chargeShipping,
       allowCashOnDelivery,
-      rawCost,
-      cost: Number.isFinite(parsedCost) && parsedCost >= 0 ? parsedCost : 0
-    };
-  });
+      cost: chargeShipping && Number.isFinite(parsedCost) && parsedCost >= 0 ? parsedCost : 0
+    });
+  }
 
-  const invalidCity = shippingCities.find((city) =>
-    city.chargeShipping && (
-      city.rawCost === undefined ||
-      city.rawCost === "" ||
-      !Number.isFinite(Number(city.rawCost)) ||
-      Number(city.rawCost) < 0
-    )
-  );
-  if (invalidCity) {
+  if (shippingCities.length === 0) {
+    errors.push("Debes dejar al menos una ciudad configurada.");
+  }
+
+  if (errors.length > 0) {
     return renderShippingSettingsPage(req, res, {
       status: 400,
       selectedStore,
-      errorMessages: [`El costo de envio para ${invalidCity.label} debe ser un numero mayor o igual a 0.`]
+      errorMessages: errors
     });
   }
 

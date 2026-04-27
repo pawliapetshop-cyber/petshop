@@ -15,7 +15,6 @@ const {
 } = db;
 const { Op } = require("sequelize");
 const {
-  getShippingCities,
   getStoreShippingConfig,
   findShippingCityConfig,
   isValidShippingCity
@@ -113,7 +112,9 @@ const normalizeCheckoutInput = (body = {}) => ({
 const formatCurrency = (value) => `$${Number(value || 0).toLocaleString("es-CO")}`;
 
 const getCheckoutCityOptions = (store) =>
-  getStoreShippingConfig(store).cities.map((city) => ({
+  getStoreShippingConfig(store).cities
+    .filter((city) => city.isActive !== false)
+    .map((city) => ({
     value: city.label,
     key: city.key,
     label: city.label
@@ -992,7 +993,7 @@ exports.processCheckout = async (req, res) => {
   if (!formData.document) errors.push("El documento es obligatorio.");
   if (!formData.phone) errors.push("El telefono es obligatorio.");
   if (!formData.city) errors.push("La ciudad es obligatoria.");
-  if (formData.city && !isValidShippingCity(formData.city)) {
+  if (formData.city && !isValidShippingCity(req.store, formData.city)) {
     errors.push("Debes seleccionar una ciudad valida.");
   }
   if (!formData.address) errors.push("La direccion es obligatoria.");
